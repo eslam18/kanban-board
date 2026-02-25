@@ -2,12 +2,21 @@ import { useCallback, useEffect, useState } from 'react';
 import CreateProjectModal from './CreateProjectModal.jsx';
 
 const statusClasses = {
-  active: 'bg-green-600/20 text-green-300 border-green-500/40',
-  completed: 'bg-blue-600/20 text-blue-300 border-blue-500/40',
-  archived: 'bg-gray-600/20 text-gray-300 border-gray-500/40',
+  active: {
+    pill: 'bg-green-600/20 text-green-300 border-green-500/40',
+    dot: 'bg-green-400',
+  },
+  completed: {
+    pill: 'bg-blue-600/20 text-blue-300 border-blue-500/40',
+    dot: 'bg-blue-400',
+  },
+  archived: {
+    pill: 'bg-gray-600/20 text-gray-300 border-gray-500/40',
+    dot: 'bg-gray-400',
+  },
 };
 
-function getStatusClass(status) {
+function getStatusClasses(status) {
   return statusClasses[status] || statusClasses.archived;
 }
 
@@ -65,6 +74,7 @@ export default function Sidebar({ projects, selectedProjectId, onSelectProject, 
 
         {projects.map((project) => {
           const isSelected = project.id === selectedProjectId;
+          const statusStyles = getStatusClasses(project.status);
 
           return (
             <button
@@ -79,10 +89,9 @@ export default function Sidebar({ projects, selectedProjectId, onSelectProject, 
             >
               <div className="mb-1 text-sm font-medium text-gray-100">{project.name}</div>
               <span
-                className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${getStatusClass(
-                  project.status,
-                )}`}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${statusStyles.pill}`}
               >
+                <span className={`h-1.5 w-1.5 rounded-full ${statusStyles.dot}`} aria-hidden="true" />
                 {project.status}
               </span>
             </button>

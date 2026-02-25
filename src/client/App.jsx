@@ -33,6 +33,30 @@ export default function App() {
     setProjectsLoading(false);
   }, []);
 
+  const handleProjectUpdated = useCallback((updatedProject) => {
+    if (!updatedProject?.id) {
+      return;
+    }
+
+    setProjects((currentProjects) =>
+      currentProjects.map((project) =>
+        project.id === updatedProject.id ? { ...project, ...updatedProject } : project,
+      ),
+    );
+
+    setSelectedProject((currentProject) => {
+      if (!currentProject || currentProject.id !== updatedProject.id) {
+        return currentProject;
+      }
+
+      return {
+        ...currentProject,
+        ...updatedProject,
+        board: currentProject.board,
+      };
+    });
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -136,14 +160,14 @@ export default function App() {
 
         {!projectsLoading && !error && selectedProject && board && !projectLoading ? (
           <>
-            <ProjectHeader project={selectedProject} />
+            <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
             <Board board={board} />
           </>
         ) : null}
 
         {!projectsLoading && !error && selectedProject && !board && !projectLoading ? (
           <>
-            <ProjectHeader project={selectedProject} />
+            <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
             <p className="text-gray-300">No board found for this project.</p>
           </>
         ) : null}

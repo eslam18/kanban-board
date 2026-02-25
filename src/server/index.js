@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 function ensureSeeded(dbApi) {
   const row = dbApi.db.prepare('SELECT COUNT(*) AS count FROM projects').get();
   if (row.count === 0) {
-    seedDefaultBoard();
+    seedDefaultBoard(dbApi);
   }
 }
 
