@@ -1,13 +1,26 @@
 import Database from 'better-sqlite3';
 
+const DEFAULT_PROJECT_COLUMNS = ['Backlog', 'In Progress', 'Review', 'Done'];
+
 function initSchema(db) {
   db.exec(`
     PRAGMA foreign_keys = ON;
 
+    CREATE TABLE IF NOT EXISTS projects (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS boards (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      project_id INTEGER,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS columns (
@@ -42,14 +55,27 @@ function initSchema(db) {
       FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE
     );
   `);
+
+  const boardColumns = db.prepare(`PRAGMA table_info(boards)`).all();
+  const hasProjectId = boardColumns.some((column) => column.name === 'project_id');
+  if (!hasProjectId) {
+    db.exec(`ALTER TABLE boards ADD COLUMN project_id INTEGER`);
+  }
 }
 
 function createDbApi(db) {
   const insertBoard = db.prepare(`
-    INSERT INTO boards (name) VALUES (?)
+    INSERT INTO boards (name, project_id) VALUES (?, ?)
   `);
   const selectBoard = db.prepare(`
-    SELECT id, name, created_at FROM boards WHERE id = ?
+    SELECT id, name, project_id, created_at FROM boards WHERE id = ?
+  `);
+  const selectBoardForProject = db.prepare(`
+    SELECT id, name, project_id, created_at
+    FROM boards
+    WHERE project_id = ?
+    ORDER BY id ASC
+    LIMIT 1
   `);
   const selectColumnsForBoard = db.prepare(`
     SELECT id, board_id, name, position
@@ -94,8 +120,38 @@ function createDbApi(db) {
     LIMIT ?
   `);
 
-  function createBoard(name) {
-    const result = insertBoard.run(name);
+  const insertProject = db.prepare(`
+    INSERT INTO projects (name, description)
+    VALUES (?, ?)
+  `);
+  const selectProject = db.prepare(`
+    SELECT id, name, description, status, created_at, updated_at
+    FROM projects
+    WHERE id = ?
+  `);
+  const selectProjects = db.prepare(`
+    SELECT id, name, description, status, created_at, updated_at
+    FROM projects
+    ORDER BY created_at ASC, id ASC
+  `);
+  const deleteProjectById = db.prepare(`
+    DELETE FROM projects WHERE id = ?
+  `);
+
+  function enrichProject(project) {
+    if (!project) {
+      return null;
+    }
+
+    const board = selectBoardForProject.get(project.id);
+    return {
+      ...project,
+      board_id: board?.id ?? null,
+    };
+  }
+
+  function createBoard(name, projectId = null) {
+    const result = insertBoard.run(name, projectId);
     return selectBoard.get(result.lastInsertRowid) || null;
   }
 
@@ -124,6 +180,75 @@ function createDbApi(db) {
   function createColumn(boardId, name, position) {
     const result = insertColumn.run(boardId, name, position);
     return selectColumn.get(result.lastInsertRowid) || null;
+  }
+
+  function createProject(name, description = '') {
+    const createProjectTxn = db.transaction((projectName, projectDescription) => {
+      const projectResult = insertProject.run(projectName, projectDescription);
+      const projectId = projectResult.lastInsertRowid;
+
+      const board = createBoard(projectName, projectId);
+      DEFAULT_PROJECT_COLUMNS.forEach((columnName, position) => {
+        createColumn(board.id, columnName, position);
+      });
+
+      return enrichProject(selectProject.get(projectId));
+    });
+
+    return createProjectTxn(name, description);
+  }
+
+  function getProject(id) {
+    return enrichProject(selectProject.get(id));
+  }
+
+  function listProjects() {
+    const projects = selectProjects.all();
+    return projects.map((project) => enrichProject(project));
+  }
+
+  function updateProject(id, updates) {
+    const entries = Object.entries(updates).filter(([, value]) => value !== undefined);
+    if (entries.length === 0) {
+      return getProject(id);
+    }
+
+    const allowedFields = new Set(['name', 'description', 'status']);
+    const validEntries = entries.filter(([field]) => allowedFields.has(field));
+
+    if (validEntries.length === 0) {
+      return getProject(id);
+    }
+
+    const setClause = validEntries.map(([field]) => `${field} = ?`).join(', ');
+    const values = validEntries.map(([, value]) => value);
+    const stmt = db.prepare(`
+      UPDATE projects
+      SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+
+    const result = stmt.run(...values, id);
+    if (result.changes === 0) {
+      return null;
+    }
+
+    return getProject(id);
+  }
+
+  function deleteProject(id) {
+    const project = getProject(id);
+    if (!project) {
+      return false;
+    }
+
+    const deleteProjectTxn = db.transaction((projectId) => {
+      db.prepare('DELETE FROM boards WHERE project_id = ?').run(projectId);
+      const result = deleteProjectById.run(projectId);
+      return result.changes > 0;
+    });
+
+    return deleteProjectTxn(id);
   }
 
   function createCard({
@@ -219,6 +344,11 @@ function createDbApi(db) {
     getBoard,
     getBoardWithDetails,
     createColumn,
+    createProject,
+    getProject,
+    listProjects,
+    updateProject,
+    deleteProject,
     createCard,
     updateCard,
     moveCard,
@@ -244,8 +374,8 @@ function getDefaultApi() {
   return defaultApi;
 }
 
-export function createBoard(name) {
-  return getDefaultApi().createBoard(name);
+export function createBoard(name, projectId = null) {
+  return getDefaultApi().createBoard(name, projectId);
 }
 
 export function getBoard(id) {
@@ -258,6 +388,26 @@ export function getBoardWithDetails(boardId) {
 
 export function createColumn(boardId, name, position) {
   return getDefaultApi().createColumn(boardId, name, position);
+}
+
+export function createProject(name, description = '') {
+  return getDefaultApi().createProject(name, description);
+}
+
+export function getProject(id) {
+  return getDefaultApi().getProject(id);
+}
+
+export function listProjects() {
+  return getDefaultApi().listProjects();
+}
+
+export function updateProject(id, updates) {
+  return getDefaultApi().updateProject(id, updates);
+}
+
+export function deleteProject(id) {
+  return getDefaultApi().deleteProject(id);
 }
 
 export function createCard(payload) {
@@ -283,4 +433,3 @@ export function addLogEntry(payload) {
 export function getLog(boardId, limit) {
   return getDefaultApi().getLog(boardId, limit);
 }
-

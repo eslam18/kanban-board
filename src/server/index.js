@@ -7,12 +7,13 @@ import { seedDefaultBoard } from './seed.js';
 import { createBoardsRouter } from './routes/boards.js';
 import { createCardsRouter } from './routes/cards.js';
 import { createLogRouter } from './routes/log.js';
+import { createProjectsRouter } from './routes/projects.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function ensureSeeded(dbApi) {
-  const row = dbApi.db.prepare('SELECT COUNT(*) AS count FROM boards').get();
+  const row = dbApi.db.prepare('SELECT COUNT(*) AS count FROM projects').get();
   if (row.count === 0) {
     seedDefaultBoard();
   }
@@ -24,6 +25,7 @@ export function createApp(dbApi = createDatabase()) {
   app.use(cors());
   app.use(express.json());
 
+  app.use('/api', createProjectsRouter(dbApi));
   app.use('/api', createBoardsRouter(dbApi));
   app.use('/api', createCardsRouter(dbApi));
   app.use('/api', createLogRouter(dbApi));

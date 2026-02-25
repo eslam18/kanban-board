@@ -16,6 +16,99 @@ describe('api routes', () => {
     dbApi.close();
   });
 
+  it('creates project and auto-creates board with default columns', async () => {
+    const created = await request(app)
+      .post('/api/projects')
+      .send({ name: 'Kanban Board v2', description: 'Multi-project support' })
+      .expect(201);
+
+    expect(created.body.id).toBeTypeOf('number');
+    expect(created.body.name).toBe('Kanban Board v2');
+    expect(created.body.description).toBe('Multi-project support');
+    expect(created.body.status).toBe('active');
+    expect(created.body.board_id).toBeTypeOf('number');
+
+    const board = await request(app).get(`/api/boards/${created.body.board_id}`).expect(200);
+    expect(board.body.columns.map((column) => column.name)).toEqual([
+      'Backlog',
+      'In Progress',
+      'Review',
+      'Done',
+    ]);
+  });
+
+  it('lists projects', async () => {
+    await request(app).post('/api/projects').send({ name: 'Project A' }).expect(201);
+    await request(app).post('/api/projects').send({ name: 'Project B' }).expect(201);
+
+    const response = await request(app).get('/api/projects').expect(200);
+
+    expect(response.body).toHaveLength(2);
+    expect(response.body[0].name).toBe('Project A');
+    expect(response.body[1].name).toBe('Project B');
+    expect(response.body[0].board_id).toBeTypeOf('number');
+  });
+
+  it('gets project with full board details', async () => {
+    const created = await request(app).post('/api/projects').send({ name: 'Project Details' }).expect(201);
+
+    const board = dbApi.getBoardWithDetails(created.body.board_id);
+    const backlog = board.columns.find((column) => column.name === 'Backlog');
+    dbApi.createCard({
+      column_id: backlog.id,
+      title: 'Step 1',
+      description: 'Build DB layer',
+      status: 'pending',
+      position: 0,
+    });
+
+    const response = await request(app).get(`/api/projects/${created.body.id}`).expect(200);
+
+    expect(response.body.id).toBe(created.body.id);
+    expect(response.body.board.id).toBe(created.body.board_id);
+    expect(response.body.board.columns).toHaveLength(4);
+    expect(response.body.board.columns[0].cards).toHaveLength(1);
+    expect(response.body.board.columns[0].cards[0].title).toBe('Step 1');
+  });
+
+  it('updates project status', async () => {
+    const created = await request(app).post('/api/projects').send({ name: 'Project Status' }).expect(201);
+
+    const response = await request(app)
+      .patch(`/api/projects/${created.body.id}`)
+      .send({ status: 'completed' })
+      .expect(200);
+
+    expect(response.body.status).toBe('completed');
+  });
+
+  it('deletes a project and cascades board/column/card deletion', async () => {
+    const created = await request(app).post('/api/projects').send({ name: 'Project Delete' }).expect(201);
+
+    const board = dbApi.getBoardWithDetails(created.body.board_id);
+    const backlog = board.columns.find((column) => column.name === 'Backlog');
+    const card = dbApi.createCard({
+      column_id: backlog.id,
+      title: 'To be deleted',
+      description: '',
+      status: 'pending',
+      position: 0,
+    });
+
+    await request(app).delete(`/api/projects/${created.body.id}`).expect(204);
+
+    await request(app).get(`/api/projects/${created.body.id}`).expect(404);
+    await request(app).get(`/api/boards/${created.body.board_id}`).expect(404);
+
+    const remainingColumns = dbApi.db
+      .prepare('SELECT COUNT(*) AS count FROM columns WHERE board_id = ?')
+      .get(created.body.board_id);
+    const remainingCard = dbApi.db.prepare('SELECT id FROM cards WHERE id = ?').get(card.id);
+
+    expect(remainingColumns.count).toBe(0);
+    expect(remainingCard).toBeUndefined();
+  });
+
   it('creates and lists boards', async () => {
     const created = await request(app)
       .post('/api/boards')
