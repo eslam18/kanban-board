@@ -1,7 +1,7 @@
 # tasks.md — Kanban Board v2: Multi-Project Support
 
 ## Steps
-- [ ] Step 1: Database + API for Projects
+- [x] Step 1: Database + API for Projects ✅ (19 tests, fa12b9b)
 - [ ] Step 2: Sidebar + Project Switching UI
 - [ ] Step 3: Polish + Integration
 
