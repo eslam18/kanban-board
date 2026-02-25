@@ -1,0 +1,18 @@
+You are building Step 1 of 2 for kanban-board UI revamp. Read DESIGN-v3.md for the full architecture.
+
+First, verify .gitignore exists with node_modules/, dist/, *.db, logs/. Create it if missing.
+
+Your deliverables:
+1. Replace src/client/styles/index.css content with Tailwind v4 syntax: `@import "tailwindcss";` plus custom dark theme variables
+2. Delete tailwind.config.js (not needed for Tailwind v4 with vite plugin)
+3. Update App.jsx layout: proper flexbox with sidebar (w-64 fixed) + main area (flex-1, overflow-auto)
+4. Revamp Sidebar.jsx: dark bg-gray-950, proper padding, project items with hover states, status dots (green/blue/gray), "New Project" button styled as ghost button
+5. Revamp CreateProjectModal.jsx: centered modal with backdrop blur/dim, proper input styling, rounded buttons
+
+Acceptance criteria: Tailwind classes apply. Sidebar looks clean. Modal is centered and styled. Layout doesn't break.
+
+Tests: All 19 existing tests must pass. `npx vite build` must succeed.
+
+When done:
+1. Run the test suite and make sure ALL tests pass (not just the new ones)
+2. Run `npx vite build` and make sure the production build succeeds
