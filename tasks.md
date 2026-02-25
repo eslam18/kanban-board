@@ -1,13 +1,10 @@
-# tasks.md — Kanban Board
+# tasks.md — Kanban Board v2: Multi-Project Support
 
 ## Steps
-
-- [x] Step 1: Project Setup + Database Layer + Tests ✅
-- [x] Step 2: REST API + Tests ✅ (14 tests, cf49cca)
-- [x] Step 3: Frontend Shell + Board View ✅ (build passes, manual fix for vitest root + .gitignore)
-- [x] Step 4: Activity Log + Polish + README ✅ (14 tests, 341f862)
+- [ ] Step 1: Database + API for Projects
+- [ ] Step 2: Sidebar + Project Switching UI
+- [ ] Step 3: Polish + Integration
 
 ## Log
-
-| Step | Status | Agent | Started | Completed | Notes |
-|------|--------|-------|---------|-----------|-------|
+| Step | Status | Retries | Commit | Notes |
+|------|--------|---------|--------|-------|
