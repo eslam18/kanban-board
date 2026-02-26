@@ -4,8 +4,8 @@ export default function Board({ board }) {
   const columns = Array.isArray(board.columns) ? board.columns : [];
 
   return (
-    <section>
-      <div className="flex gap-4 overflow-x-auto pb-2">
+    <section className="min-w-0">
+      <div className="flex min-w-0 gap-4">
         {columns.map((column) => (
           <Column key={column.id} column={column} />
         ))}

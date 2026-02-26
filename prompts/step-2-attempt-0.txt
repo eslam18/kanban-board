@@ -1,0 +1,23 @@
+# Step 2/2: Board + Cards + Activity Log
+# Mode: fresh
+# Timestamp: 2026-02-26T12:54:52Z
+# ─────────────────────────────────────────
+
+You are building Step 2 of 2 for kanban-board UI revamp. Read DESIGN-v3.md for the full architecture.
+
+Step 1 is complete: Tailwind v4 is fixed, App.jsx layout revamped, Sidebar and CreateProjectModal restyled.
+
+Your deliverables:
+1. Revamp ProjectHeader.jsx: clean typography, status dropdown styled, subtle bottom border
+2. Revamp Board.jsx: columns in flex row, each column flex-1 with equal width, gap-4 between columns
+3. Revamp Column.jsx: rounded-lg container, bg-gray-800/50, column header with card count badge, proper padding
+4. Revamp Card.jsx: bg-gray-800, rounded-lg, border border-gray-700, hover:border-gray-600, status pill (colored bg + white text, small rounded), retry count badge if > 0, proper spacing
+5. Revamp ActivityLog.jsx: slide-in from right with backdrop, proper width (400px), entries with timestamp + colored type indicator, close button
+
+Acceptance criteria: Board columns fill available space equally. Cards look polished. Activity log slides in cleanly. Everything dark themed.
+
+Tests: All 19 existing tests must pass. `npx vite build` must succeed.
+
+When done:
+1. Run the test suite and make sure ALL tests pass (not just the new ones)
+2. Run `npx vite build` and make sure the production build succeeds

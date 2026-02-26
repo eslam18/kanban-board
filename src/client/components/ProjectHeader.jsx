@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 const statusClasses = {
-  active: 'bg-green-600/20 text-green-300 border-green-500/40',
-  completed: 'bg-blue-600/20 text-blue-300 border-blue-500/40',
-  archived: 'bg-gray-600/20 text-gray-300 border-gray-500/40',
+  active: 'border-emerald-400/40 bg-emerald-500/20 text-emerald-200',
+  completed: 'border-blue-400/40 bg-blue-500/20 text-blue-200',
+  archived: 'border-gray-500/50 bg-gray-600/20 text-gray-300',
 };
 
 function getStatusClass(status) {
@@ -52,23 +52,35 @@ export default function ProjectHeader({ project, onProjectUpdated }) {
   }
 
   return (
-    <header className="mb-4 rounded-lg border border-gray-700 bg-gray-900/80 p-4">
-      <div className="mb-2 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-100">{project.name}</h1>
-        <span
-          className={`rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${getStatusClass(
-            project.status,
-          )}`}
-        >
-          {project.status}
-        </span>
-        <label className="ml-auto flex items-center gap-2 text-xs text-gray-300">
-          Status
+    <header className="mb-5 border-b border-gray-800 pb-5">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-100">
+            {project.name}
+          </h1>
+          <p className="mt-1 text-sm text-gray-400">
+            {project.description && project.description.trim() ? project.description : 'No description'}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-900/70 px-3 py-2">
+          <span
+            className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${getStatusClass(
+              project.status,
+            )}`}
+          >
+            {project.status}
+          </span>
+
+          <label htmlFor="project-status" className="text-xs font-medium text-gray-300">
+            Status
+          </label>
           <select
+            id="project-status"
             value={project.status}
             onChange={handleStatusChange}
             disabled={isSaving}
-            className="rounded-md border border-gray-700 bg-gray-950 px-2 py-1 text-xs capitalize text-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-md border border-gray-600 bg-gray-950 px-2.5 py-1.5 text-xs font-medium capitalize text-gray-100 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-500/40 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -76,11 +88,10 @@ export default function ProjectHeader({ project, onProjectUpdated }) {
               </option>
             ))}
           </select>
-        </label>
+        </div>
       </div>
-      <p className="text-sm text-gray-300">
-        {project.description && project.description.trim() ? project.description : 'No description'}
-      </p>
+
+      {isSaving ? <p className="mt-2 text-xs text-gray-400">Saving status...</p> : null}
       {error ? <p className="mt-2 text-sm text-red-300">{error}</p> : null}
     </header>
   );
