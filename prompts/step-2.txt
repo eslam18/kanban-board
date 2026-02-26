@@ -1,18 +1,14 @@
-You are building Step 2 of 2 for kanban-board UI revamp. Read DESIGN-v3.md for the full architecture.
+You were working on Step 2 of 2 for kanban-board UI revamp and got interrupted. You already completed:
+- ✅ ProjectHeader.jsx — revamped with clean typography, status dropdown styled, bottom border
+- ✅ Board.jsx — flex row layout with gap-4
+- ✅ Column.jsx — rounded-lg container, bg-gray-800/50, card count badge
 
-Step 1 is complete: Tailwind v4 is fixed, App.jsx layout revamped, Sidebar and CreateProjectModal restyled.
+Remaining deliverables (finish these):
+1. Revamp Card.jsx: bg-gray-800, rounded-lg, border border-gray-700, hover:border-gray-600, status pill (colored bg + white text, small rounded), retry count badge if > 0, proper spacing
+2. Revamp ActivityLog.jsx: slide-in from right with backdrop, proper width (400px), entries with timestamp + colored type indicator, close button
 
-Your deliverables:
-1. Revamp ProjectHeader.jsx: clean typography, status dropdown styled, subtle bottom border
-2. Revamp Board.jsx: columns in flex row, each column flex-1 with equal width, gap-4 between columns
-3. Revamp Column.jsx: rounded-lg container, bg-gray-800/50, column header with card count badge, proper padding
-4. Revamp Card.jsx: bg-gray-800, rounded-lg, border border-gray-700, hover:border-gray-600, status pill (colored bg + white text, small rounded), retry count badge if > 0, proper spacing
-5. Revamp ActivityLog.jsx: slide-in from right with backdrop, proper width (400px), entries with timestamp + colored type indicator, close button
-
-Acceptance criteria: Board columns fill available space equally. Cards look polished. Activity log slides in cleanly. Everything dark themed.
-
-Tests: All 19 existing tests must pass. `npx vite build` must succeed.
+Read DESIGN-v3.md for full visual spec.
 
 When done:
-1. Run the test suite and make sure ALL tests pass (not just the new ones)
+1. Run the test suite and make sure ALL 19 tests pass
 2. Run `npx vite build` and make sure the production build succeeds
