@@ -58,13 +58,14 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-md rounded-lg border border-gray-700 bg-gray-900 p-5 shadow-2xl">
-        <h2 className="mb-4 text-lg font-semibold text-gray-100">Create Project</h2>
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl border border-gray-700/80 bg-gray-900/95 p-6 shadow-2xl shadow-black/50">
+        <h2 className="mb-1 text-xl font-semibold text-gray-100">Create Project</h2>
+        <p className="mb-5 text-sm text-gray-400">Start a new workspace board for your team.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="project-name" className="mb-1 block text-sm text-gray-300">
+            <label htmlFor="project-name" className="mb-1.5 block text-sm font-medium text-gray-200">
               Name
             </label>
             <input
@@ -72,14 +73,14 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="w-full rounded-md border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-100 outline-none ring-0 placeholder:text-gray-500 focus:border-gray-500"
+              className="w-full rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-100 outline-none transition placeholder:text-gray-500 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/40"
               placeholder="Project name"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="project-description" className="mb-1 block text-sm text-gray-300">
+            <label htmlFor="project-description" className="mb-1.5 block text-sm font-medium text-gray-200">
               Description
             </label>
             <textarea
@@ -87,7 +88,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={3}
-              className="w-full resize-none rounded-md border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-100 outline-none ring-0 placeholder:text-gray-500 focus:border-gray-500"
+              className="w-full resize-none rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-gray-100 outline-none transition placeholder:text-gray-500 focus:border-gray-500 focus:ring-2 focus:ring-gray-500/40"
               placeholder="Optional one-line summary"
             />
           </div>
@@ -99,14 +100,14 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-md border border-gray-700 px-3 py-1.5 text-sm text-gray-200 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg border border-gray-700 px-3 py-2 text-sm font-medium text-gray-200 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-md border border-gray-600 bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Creating...' : 'Create'}
             </button>

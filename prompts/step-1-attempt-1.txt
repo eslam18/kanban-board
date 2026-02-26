@@ -1,3 +1,8 @@
+# Step 1/2: Fix Tailwind v4 + Core Layout
+# Mode: resume
+# Timestamp: 2026-02-26T03:02:24Z
+# ─────────────────────────────────────────
+
 You were working on Step 1 of 2 for kanban-board UI revamp and got interrupted. You already completed:
 - ✅ src/client/styles/index.css — Tailwind v4 syntax with @import "tailwindcss" and @theme block
 - ✅ src/client/App.jsx — Flexbox layout with sidebar w-64 + main flex-1
