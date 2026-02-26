@@ -56,6 +56,13 @@ function initSchema(db) {
     );
   `);
 
+  // Add project_dir column if missing
+  const projColumns = db.prepare(`PRAGMA table_info(projects)`).all();
+  const hasProjectDir = projColumns.some((column) => column.name === 'project_dir');
+  if (!hasProjectDir) {
+    db.exec(`ALTER TABLE projects ADD COLUMN project_dir TEXT DEFAULT ''`);
+  }
+
   const boardColumns = db.prepare(`PRAGMA table_info(boards)`).all();
   const hasProjectId = boardColumns.some((column) => column.name === 'project_id');
   if (!hasProjectId) {
@@ -125,12 +132,12 @@ function createDbApi(db) {
     VALUES (?, ?)
   `);
   const selectProject = db.prepare(`
-    SELECT id, name, description, status, created_at, updated_at
+    SELECT id, name, description, status, project_dir, created_at, updated_at
     FROM projects
     WHERE id = ?
   `);
   const selectProjects = db.prepare(`
-    SELECT id, name, description, status, created_at, updated_at
+    SELECT id, name, description, status, project_dir, created_at, updated_at
     FROM projects
     ORDER BY created_at ASC, id ASC
   `);
