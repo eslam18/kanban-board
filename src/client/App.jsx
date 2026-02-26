@@ -127,7 +127,7 @@ export default function App() {
   }, [selectedProjectId]);
 
   return (
-    <main className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="flex h-screen overflow-hidden bg-gray-950 text-gray-100">
       <Sidebar
         projects={projects}
         selectedProjectId={selectedProjectId}
@@ -135,49 +135,51 @@ export default function App() {
         onProjectsChange={handleProjectsChange}
       />
 
-      <section className="ml-[260px] p-6">
-        <div className="mb-4 flex items-center justify-end">
-          <button
-            type="button"
-            onClick={() => setIsActivityOpen((prev) => !prev)}
-            disabled={!board}
-            className="rounded-md border border-gray-600 px-3 py-1.5 text-sm text-gray-100 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Activity
-          </button>
-        </div>
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <section className="flex-1 overflow-auto p-6 lg:p-8">
+          <div className="mb-4 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => setIsActivityOpen((prev) => !prev)}
+              disabled={!board}
+              className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Activity
+            </button>
+          </div>
 
-        {projectsLoading ? <p className="text-gray-300">Loading projects...</p> : null}
-        {!projectsLoading && error ? <p className="text-red-300">{error}</p> : null}
+          {projectsLoading ? <p className="text-gray-300">Loading projects...</p> : null}
+          {!projectsLoading && error ? <p className="text-red-300">{error}</p> : null}
 
-        {!projectsLoading && !error && projects.length === 0 ? (
-          <p className="text-gray-300">No projects found.</p>
-        ) : null}
+          {!projectsLoading && !error && projects.length === 0 ? (
+            <p className="text-gray-300">No projects found.</p>
+          ) : null}
 
-        {!projectsLoading && !error && projects.length > 0 && projectLoading ? (
-          <p className="text-gray-300">Loading project...</p>
-        ) : null}
+          {!projectsLoading && !error && projects.length > 0 && projectLoading ? (
+            <p className="text-gray-300">Loading project...</p>
+          ) : null}
 
-        {!projectsLoading && !error && selectedProject && board && !projectLoading ? (
-          <>
-            <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
-            <Board board={board} />
-          </>
-        ) : null}
+          {!projectsLoading && !error && selectedProject && board && !projectLoading ? (
+            <>
+              <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
+              <Board board={board} />
+            </>
+          ) : null}
 
-        {!projectsLoading && !error && selectedProject && !board && !projectLoading ? (
-          <>
-            <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
-            <p className="text-gray-300">No board found for this project.</p>
-          </>
-        ) : null}
-      </section>
+          {!projectsLoading && !error && selectedProject && !board && !projectLoading ? (
+            <>
+              <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
+              <p className="text-gray-300">No board found for this project.</p>
+            </>
+          ) : null}
+        </section>
+      </main>
 
       <ActivityLog
         boardId={board?.id}
         isOpen={isActivityOpen}
         onClose={() => setIsActivityOpen(false)}
       />
-    </main>
+    </div>
   );
 }

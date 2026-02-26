@@ -1,9 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-app-bg: #020617;
+  --color-app-surface: #0b1220;
+  --color-app-panel: #111827;
+  --color-app-border: #334155;
+}
 
 :root {
   color-scheme: dark;
+  --app-bg: #020617;
+  --app-surface: #0b1220;
+  --app-panel: #111827;
+  --app-border: #334155;
+  --app-text: #f8fafc;
 }
 
 html,
@@ -14,7 +24,7 @@ body,
 
 body {
   margin: 0;
-  background-color: rgb(17 24 39);
-  color: rgb(243 244 246);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(circle at top right, #111827 0%, var(--app-bg) 55%);
+  color: var(--app-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
