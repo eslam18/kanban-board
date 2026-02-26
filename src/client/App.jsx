@@ -191,11 +191,13 @@ export default function App() {
         onClose={() => setIsActivityOpen(false)}
       />
 
-      <LogsPanel
-        projectId={selectedProjectId}
-        isOpen={isLogsOpen}
-        onClose={() => setIsLogsOpen(false)}
-      />
+      {isLogsOpen && (
+        <LogsPanel
+          projectId={selectedProjectId}
+          isOpen={isLogsOpen}
+          onClose={() => setIsLogsOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -62,7 +62,7 @@ export default function LogsPanel({ projectId, isOpen, onClose }) {
   };
 
   return (
-    <aside className="flex w-96 flex-col border-l border-gray-700 bg-gray-900">
+    <div className="fixed inset-x-0 top-0 z-50 flex max-h-[50vh] flex-col border-b border-gray-700 bg-gray-900 shadow-2xl">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-700 px-4 py-3">
         <h2 className="text-sm font-semibold text-gray-100">Build Logs</h2>
@@ -138,7 +138,7 @@ export default function LogsPanel({ projectId, isOpen, onClose }) {
 
             {/* JSON result files */}
             {logContent && !logContent.error && !logContent.content && (
-              <pre className="whitespace-pre-wrap break-all rounded-lg bg-gray-950 p-3 text-xs text-green-300 font-mono max-h-[70vh] overflow-auto">
+              <pre className="whitespace-pre overflow-x-auto rounded-lg bg-gray-950 p-3 text-xs text-green-300 font-mono max-h-[30vh] overflow-auto">
                 {JSON.stringify(logContent, null, 2)}
               </pre>
             )}
@@ -149,7 +149,7 @@ export default function LogsPanel({ projectId, isOpen, onClose }) {
                 <p className="mb-2 text-xs text-gray-500">
                   {logContent.returnedLines} / {logContent.totalLines} lines
                 </p>
-                <pre className="whitespace-pre-wrap break-all rounded-lg bg-gray-950 p-3 text-xs text-gray-300 font-mono max-h-[70vh] overflow-auto leading-relaxed">
+                <pre className="whitespace-pre overflow-x-auto rounded-lg bg-gray-950 p-3 text-xs text-gray-300 font-mono max-h-[30vh] overflow-auto leading-relaxed">
                   {logContent.content}
                 </pre>
               </>
@@ -157,6 +157,6 @@ export default function LogsPanel({ projectId, isOpen, onClose }) {
           </div>
         )}
       </div>
-    </aside>
+    </div>
   );
 }
