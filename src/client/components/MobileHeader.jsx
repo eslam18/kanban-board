@@ -11,8 +11,9 @@ function getStatusClass(status) {
 export default function MobileHeader({
   project,
   boardId,
+  isSidebarOpen,
   isActivityOpen,
-  onOpenSidebar,
+  onToggleSidebar,
   onToggleActivity,
 }) {
   const projectName = project?.name || 'No project selected';
@@ -22,8 +23,9 @@ export default function MobileHeader({
     <div className="flex items-center gap-2 border-b border-gray-800 bg-gray-950 px-3 py-2">
       <button
         type="button"
-        aria-label="Open project drawer"
-        onClick={onOpenSidebar}
+        aria-label={isSidebarOpen ? 'Close project drawer' : 'Open project drawer'}
+        aria-expanded={isSidebarOpen}
+        onClick={onToggleSidebar}
         className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-gray-700 text-gray-100 transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
       >
         <svg

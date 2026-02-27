@@ -184,8 +184,9 @@ export default function App() {
               <MobileHeader
                 project={selectedProject}
                 boardId={board?.id}
+                isSidebarOpen={isSidebarOpen}
                 isActivityOpen={isActivityOpen}
-                onOpenSidebar={() => setIsSidebarOpen(true)}
+                onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
                 onToggleActivity={() => {
                   setIsActivityOpen((prev) => !prev);
                   setIsLogsOpen(false);
