@@ -2,3 +2,12 @@ node_modules/
 dist/
 *.db
 logs/
+
+# Orchestration artifacts (do not commit)
+.pipeline.lock
+.codex-step.lock
+build-state.json
+build-state.json.bak
+kanban-tracking.json
+prompts/
+logs/
