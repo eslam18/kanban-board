@@ -10,7 +10,7 @@
       "number": 1,
       "name": "Repo discovery + baseline snapshots",
       "status": "retrying",
-      "retries": 1,
+      "retries": 2,
       "maxRetries": 3,
       "commitHash": null,
       "lastError": "idle timeout: no output for 600s",
@@ -96,7 +96,7 @@
     }
   ],
   "createdAt": "2026-02-27T15:59:08Z",
-  "updatedAt": "2026-02-27T16:34:56Z",
+  "updatedAt": "2026-02-27T16:45:53Z",
   "lastError": "idle timeout: no output for 600s",
   "escalated": false
 }
