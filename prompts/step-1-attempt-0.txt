@@ -1,8 +1,14 @@
 # Step 1/8: Repo discovery + baseline snapshots
-# Mode: fresh
-# Timestamp: 2026-02-27T16:23:44Z
+# Mode: resume
+# Timestamp: 2026-02-27T16:34:56Z
 # ─────────────────────────────────────────
 
+Previous attempt for Step 1 (Repo discovery + baseline snapshots) failed. Killed due to idle timeout. No meaningful changes were made (meaningfulChangedCount=0).
+
+Fix these issues. Requirements are in DESIGN.md. Do NOT run npm run dev or npm start — they block forever. Verify via npm run build.
+
+---
+ORIGINAL STEP PROMPT (requirements; do not ignore):
 You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
