@@ -1,0 +1,17 @@
+{
+  "project_id": 12,
+  "board_id": 12,
+  "columns": {
+    "backlog": 45,
+    "in_progress": 46,
+    "review": 47,
+    "done": 48
+  },
+  "cards": {
+    "1": 37,
+    "2": 38,
+    "3": 39,
+    "4": 40,
+    "5": 41
+  }
+}
