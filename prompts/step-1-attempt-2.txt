@@ -1,4 +1,8 @@
-PIPELINE_STEP_KIND: discovery
+# Step 1/8: Repo discovery + baseline snapshots
+# Mode: fresh
+# Timestamp: 2026-02-27T17:12:52Z
+# ─────────────────────────────────────────
+
 You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 

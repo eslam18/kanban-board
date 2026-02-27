@@ -5,6 +5,7 @@ import ProjectHeader from './components/ProjectHeader.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import LogsPanel from './components/LogsPanel.jsx';
 import DocsPanel from './components/DocsPanel.jsx';
+import AppShell from './components/AppShell.jsx';
 
 export default function App() {
   const [projects, setProjects] = useState([]);
@@ -17,6 +18,7 @@ export default function App() {
   const [isActivityOpen, setIsActivityOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isDocsOpen, setIsDocsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pipelineWarning, setPipelineWarning] = useState(null);
 
   const handleProjectsChange = useCallback((nextProjects, preferredProjectId = null) => {
@@ -62,6 +64,11 @@ export default function App() {
     });
   }, []);
 
+  const handleSelectProject = useCallback((projectId) => {
+    setSelectedProjectId(projectId);
+    setIsSidebarOpen(false);
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -96,6 +103,7 @@ export default function App() {
       setBoard(null);
       setProjectLoading(false);
       setIsActivityOpen(false);
+      setIsSidebarOpen(false);
       setPipelineWarning(null);
       return;
     }
@@ -157,43 +165,75 @@ export default function App() {
   }, [selectedProjectId]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-950 text-gray-100">
-      <Sidebar
-        projects={projects}
-        selectedProjectId={selectedProjectId}
-        onSelectProject={setSelectedProjectId}
-        onProjectsChange={handleProjectsChange}
-      />
+    <>
+      <AppShell
+        sidebar={(
+          <Sidebar
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onSelectProject={handleSelectProject}
+            onProjectsChange={handleProjectsChange}
+          />
+        )}
+        isSidebarOpen={isSidebarOpen}
+        onSidebarClose={() => setIsSidebarOpen(false)}
+        header={(
+          <div className="px-6 pb-0 pt-6 lg:px-8 lg:pt-8">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                className="inline-flex items-center rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 lg:hidden"
+              >
+                Projects
+              </button>
 
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <section className="flex-1 overflow-auto p-6 lg:p-8">
-          <div className="mb-4 flex items-center justify-end">
-            <button
-              type="button"
-              onClick={() => { setIsDocsOpen((prev) => !prev); setIsLogsOpen(false); setIsActivityOpen(false); }}
-              disabled={!selectedProject}
-              className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Plan
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIsLogsOpen((prev) => !prev); setIsDocsOpen(false); setIsActivityOpen(false); }}
-              disabled={!selectedProject}
-              className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Logs
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIsActivityOpen((prev) => !prev); setIsLogsOpen(false); setIsDocsOpen(false); }}
-              disabled={!board}
-              className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Activity
-            </button>
+              <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsDocsOpen((prev) => !prev);
+                    setIsLogsOpen(false);
+                    setIsActivityOpen(false);
+                    setIsSidebarOpen(false);
+                  }}
+                  disabled={!selectedProject}
+                  className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Plan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogsOpen((prev) => !prev);
+                    setIsDocsOpen(false);
+                    setIsActivityOpen(false);
+                    setIsSidebarOpen(false);
+                  }}
+                  disabled={!selectedProject}
+                  className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Logs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsActivityOpen((prev) => !prev);
+                    setIsLogsOpen(false);
+                    setIsDocsOpen(false);
+                    setIsSidebarOpen(false);
+                  }}
+                  disabled={!board}
+                  className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Activity
+                </button>
+              </div>
+            </div>
           </div>
-
+        )}
+      >
+        <section className="min-w-0 px-6 pb-6 lg:px-8 lg:pb-8">
           {projectsLoading ? <p className="text-gray-300">Loading projects...</p> : null}
           {!projectsLoading && error ? <p className="text-red-300">{error}</p> : null}
 
@@ -228,7 +268,12 @@ export default function App() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => { setIsLogsOpen(true); setIsDocsOpen(false); setIsActivityOpen(false); }}
+                        onClick={() => {
+                          setIsLogsOpen(true);
+                          setIsDocsOpen(false);
+                          setIsActivityOpen(false);
+                          setIsSidebarOpen(false);
+                        }}
                         className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-600"
                       >
                         View logs
@@ -250,7 +295,7 @@ export default function App() {
             </>
           ) : null}
         </section>
-      </main>
+      </AppShell>
 
       <ActivityLog
         boardId={board?.id}
@@ -273,6 +318,6 @@ export default function App() {
           onClose={() => setIsLogsOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 }

@@ -1,0 +1,57 @@
+# Step 2/8: Introduce an AppShell layout contract
+# Mode: fresh
+# Timestamp: 2026-02-27T20:48:06Z
+# ─────────────────────────────────────────
+
+You are building Step 2 of 8 for `/Users/jarivs/Documents/JarvisProjects/kanban-board` (Kanban Board Mobile Layout Revamp).
+
+What came before (Step 1 complete): repo discovery + baseline snapshots. Frontend is React + Vite + Tailwind, rooted at `src/client` (see `vite.config.js`). Components are `.jsx` with explicit extension imports. Tests are server-side Vitest + Supertest only (`tests/api.test.js`, `tests/db.test.js`).
+
+Step 2 goal: introduce/solidify an AppShell layout contract so ONE component owns responsive orchestration (header + sidebar/drawer + main content), and the main content region is shrink/scroll safe (`min-w-0`, and `min-h-0` where needed). Desktop layout must remain visually unchanged, and on mobile the sidebar must NOT render inline beside the board (no overlap by structure, not z-index hacks).
+
+Modify these exact files:
+
+1) `package.json`
+- Add a build script so `npm run build` exists and succeeds.
+- Current scripts: `"test": "vitest run"`.
+- Update scripts to include: `"build": "vite build"` (keep `"test": "vitest run"` unchanged).
+- Do not add dependencies for this step.
+
+2) `src/client/components/AppShell.jsx`
+- Keep the default export and prop contract the same unless absolutely necessary:
+  - Current signature: `export default function AppShell({ sidebar, header, isSidebarOpen, onSidebarClose, children })`
+- Preserve existing responsive structure and behavior already implemented:
+  - Root wrapper stays `className="flex h-screen overflow-hidden bg-gray-950 text-gray-100"`.
+  - Keep the off-canvas sidebar container pattern that is structurally non-inline on mobile:
+    - Sidebar container uses `fixed inset-y-0 left-0 ... lg:static ... lg:translate-x-0`
+    - Mobile closed state remains off-canvas via `-translate-x-full` with `pointer-events-none`, while desktop stays visible via `lg:*` overrides.
+  - Keep the backdrop button (`lg:hidden`) that closes the sidebar on click.
+  - Keep ESC-to-close behavior implemented via `useEffect` and `window.addEventListener('keydown', ...)`.
+- Strengthen the “layout contract” for safe flex scrolling:
+  - Add `min-h-0` to the main content column wrapper (the `<div className="flex min-w-0 flex-1 flex-col overflow-hidden">` wrapper) so the `<main className="... overflow-y-auto">` scroll region behaves correctly inside `h-screen` flex layouts.
+  - Keep `min-w-0` on the main column wrapper and on `<main>`.
+  - Keep `<main>` as the scroll container (`flex-1 overflow-y-auto`) and do not introduce horizontal scrolling here (board horizontal scroll/snap comes in Step 5).
+  - Preserve current `overflow-x-hidden overflow-y-auto` on `<main>` unless a minimal tweak is required for “safe overflow defaults” (avoid behavioral changes in this step).
+
+3) `src/client/App.jsx` (only if needed)
+- App currently imports `AppShell` from `./components/AppShell.jsx` and passes:
+  - `sidebar={...<Sidebar ... />}`
+  - `isSidebarOpen={isSidebarOpen}`
+  - `onSidebarClose={() => setIsSidebarOpen(false)}`
+  - `header={...}` (contains the mobile “Projects” button with `lg:hidden` and other action buttons)
+- Prefer NO changes here; only adjust if required to keep the AppShell prop contract consistent after internal AppShell tweaks. Do not change desktop layout spacing (currently uses `px-6 ... lg:px-8` etc).
+
+Verification (must run and must pass):
+- `npm test`
+- `npm run build`
+
+Mandatory rules:
+- YOU ARE RUNNING NON-INTERACTIVELY. There is no human to answer questions.
+- NEVER ask for confirmation. NEVER ask clarifying questions. NEVER wait for input.
+- If you encounter unexpected state (dirty files, missing deps, etc), handle it yourself and continue.
+- Ignore any files you didn't create — they are orchestration artifacts.
+- ALL existing tests must still pass
+- npm run build must succeed
+- Do NOT run npm run dev or npm start — they block forever
+- CRITICAL: Running npm run dev or npm start WILL hang your session indefinitely. Never do it.
+- IMPORTANT: When using shell commands, ALWAYS quote file paths (especially Next.js route segments like app/api/foo/[id]/route.ts) because zsh treats [id] as a glob.
