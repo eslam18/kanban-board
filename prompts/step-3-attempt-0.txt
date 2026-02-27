@@ -1,95 +1,105 @@
 # Step 3/8: Implement mobile header (P1)
-# Mode: resume
-# Timestamp: 2026-02-27T20:54:04Z
+# Mode: fresh
+# Timestamp: 2026-02-27T21:03:51Z
 # ─────────────────────────────────────────
 
-Previous attempt for Step 3 (Implement mobile header (P1)) failed. No meaningful changes were made (meaningfulChangedCount=0).
+You are building Step 3 of 8 for `/Users/jarivs/Documents/JarvisProjects/kanban-board`.
 
-Fix these issues. Requirements are in DESIGN.md. Do NOT run npm run dev or npm start — they block forever. Verify via npm run build.
+Context (what came before)
+- Step 1 (done): repo discovery + baseline snapshots.
+- Step 2 (done): introduced an AppShell layout contract that owns responsive orchestration.
+  - `src/client/components/AppShell.jsx` exports `AppShell({ sidebar, header, isSidebarOpen, onSidebarClose, children })`
+  - It renders a fixed left drawer container with `lg:` static behavior, a backdrop close button (`lg:hidden`), ESC-to-close via `useEffect`, and a `min-w-0` main content region.
 
----
-ORIGINAL STEP PROMPT (requirements; do not ignore):
-You are building Step 3 of 8 for `/Users/jarivs/Documents/JarvisProjects/kanban-board` (Kanban Board Mobile Layout Revamp).
+Step 3 goal (P1): Implement the mobile header
+- On mobile breakpoints (the repo uses Tailwind `lg` breakpoint heavily: `lg:hidden` / `hidden lg:block`), show a compact header that includes:
+  - Hamburger button (touch target ≥ 44px) to open the project drawer (`setIsSidebarOpen(true)`)
+  - Project name + status (compact, truncates safely)
+  - Activity log button (touch target ≥ 44px) to toggle the existing `ActivityLog` panel
 
-What came before:
-- Step 1 is complete (repo discovery + baseline snapshots).
-- Step 2 is complete: `src/client/components/AppShell.jsx` now owns the shell layout contract (sidebar + optional `header` + main scroll region). Current signature is `export default function AppShell({ sidebar, header, isSidebarOpen, onSidebarClose, children })` and it already implements an off-canvas sidebar on `<lg`, a backdrop close button, and ESC-to-close via `useEffect`.
+Acceptance criteria
+- On an iPhone-sized viewport (390×844), the header fits without clipping; buttons are comfortably tappable.
+- Desktop header/layout remains unchanged (mobile header hidden on desktop).
 
-Read `DESIGN.md` and implement Step 3: Implement mobile header (P1).
+Files to create / modify (use these exact paths)
+1) Create: `src/client/components/MobileHeader.jsx`
+2) Modify: `src/client/App.jsx`
+3) Modify (required so the pipeline can run `npm run build`): `package.json`
 
-Goal (Step 3):
-- On mobile breakpoints (match the repo’s existing breakpoint choice: `lg` is already used by `AppShell.jsx`), show a compact header containing:
-  - Hamburger button (>= 44px touch target) to open/close the sidebar drawer (`isSidebarOpen` in `src/client/App.jsx`)
-  - Project name + status (compact and readable; must truncate safely)
-  - Activity log button (>= 44px touch target) to open/close the activity log (`isActivityOpen` in `src/client/App.jsx`)
-- Desktop header/layout must remain unchanged (the existing header UI in `src/client/App.jsx` should remain the desktop experience).
+Implementation details (must match existing code patterns and state)
+A) New component: `src/client/components/MobileHeader.jsx`
+- Export a default React component (function component) consistent with the repo’s style (plain `.jsx`, Tailwind classes, no TS).
+- Suggested signature (keep it simple and explicit):
+  - `export default function MobileHeader({ project, boardId, isActivityOpen, onOpenSidebar, onToggleActivity }) { ... }`
+- Render a single-row header bar:
+  - Left: hamburger button
+    - `type="button"`
+    - `aria-label="Open project drawer"`
+    - Touch target: use `h-11 w-11` (44px) and `inline-flex items-center justify-center`
+  - Middle: project identity block
+    - `min-w-0 flex-1` so long names don’t overflow
+    - Project name: `truncate`, small readable typography (e.g. `text-sm font-semibold`)
+    - Status: compact pill (similar to `src/client/components/ProjectHeader.jsx` and `src/client/components/Sidebar.jsx` status patterns)
+      - Project statuses used in the app: `active`, `completed`, `archived`
+      - Add a small local mapping like `statusClasses` to style the pill; fall back to archived styling on unknown.
+  - Right: Activity button
+    - `type="button"`
+    - `aria-label` like `"Toggle activity log"`
+    - Touch target: use `h-11` plus horizontal padding (or `h-11 w-11` if icon-only)
+    - Disable when `!boardId` (mirrors existing desktop button `disabled={!board}` in `src/client/App.jsx`)
+    - Label can be `Activity` (or `Close` when `isActivityOpen` is true), but keep it compact.
+- Keep styling aligned with the dark theme already used (gray-950/900/800, gray borders, focus rings like other buttons).
+- No new dependencies (no icon library). If you want icons, use small inline SVG.
 
-Key existing code to integrate with (use real names/signatures):
-- `src/client/App.jsx`
-  - Owns state: `isActivityOpen`, `isLogsOpen`, `isDocsOpen`, `isSidebarOpen`, plus `selectedProject`, `selectedProjectId`, `board`.
-  - Renders `AppShell` with `sidebar={...<Sidebar .../>}`, `isSidebarOpen={isSidebarOpen}`, `onSidebarClose={() => setIsSidebarOpen(false)}`, and `header={...}`.
-  - Opens overlays via existing header button handlers that also close other panels (see current `Plan`, `Logs`, `Activity` button `onClick` blocks).
-  - Activity log is rendered outside the shell as: `<ActivityLog boardId={board?.id} isOpen={isActivityOpen} onClose={() => setIsActivityOpen(false)} />`
-  - Docs/logs overlays are rendered outside the shell as `<DocsPanel ...>` and `<LogsPanel ...>`.
-- `src/client/components/ProjectHeader.jsx` already displays the project name and status (with a status dropdown), but Step 3 requires the *mobile header* to show project name + status in the top header region.
-- `src/client/components/ActivityLog.jsx` already implements the panel; Step 3 just needs an accessible header button to toggle it.
-- `src/client/components/AppShell.jsx` renders `{header ? <header className="shrink-0">{header}</header> : null}` above the scrolling `<main>`.
+B) Integrate into the shell header: `src/client/App.jsx`
+- Currently `AppShell` is invoked with an inline `header={ (...) }` that includes:
+  - A mobile-only “Projects” button (`lg:hidden`) that opens the sidebar
+  - Desktop-visible action buttons: “Plan”, “Logs”, “Activity”
+- Replace that arrangement with a true mobile header + existing desktop header, using responsive wrappers:
+  - Import: `import MobileHeader from './components/MobileHeader.jsx';`
+  - `header={(
+      <div>
+        <div className="lg:hidden ..."> <MobileHeader ... /> </div>
+        <div className="hidden lg:block px-6 pb-0 pt-6 lg:px-8 lg:pt-8"> ...existing desktop actions... </div>
+      </div>
+    )}`
+- Mobile header props must wire to the existing state in `App.jsx`:
+  - `project={selectedProject}`
+  - `boardId={board?.id}` (or pass `board?.id` as `boardId`)
+  - `isActivityOpen={isActivityOpen}`
+  - `onOpenSidebar={() => setIsSidebarOpen(true)}`
+  - `onToggleActivity={() => { setIsActivityOpen((prev) => !prev); setIsLogsOpen(false); setIsDocsOpen(false); setIsSidebarOpen(false); }}`
+- Desktop header actions must remain behaviorally identical to the current code:
+  - “Plan” button toggles `isDocsOpen`, closes logs/activity/sidebar
+  - “Logs” button toggles `isLogsOpen`, closes docs/activity/sidebar
+  - “Activity” button toggles `isActivityOpen`, closes logs/docs/sidebar
+  - Keep the existing Tailwind classes for these buttons so the desktop look stays the same.
+- Remove the old mobile “Projects” button from the desktop header block (it becomes redundant once `MobileHeader` exists).
 
-Implement with these exact file changes:
+C) Ensure `npm run build` exists and works: `package.json`
+- Add a `build` script that builds the frontend using the existing Vite config:
+  - `"build": "vite build --config vite.config.js"`
+- Do not add scripts that would be run in CI and block forever (don’t encourage `dev`/`start` in the execution steps).
 
-1) CREATE `src/client/components/MobileHeader.jsx`
-- Default export a React component with this exact signature:
-  - `export default function MobileHeader({ project, isSidebarOpen, onToggleSidebar, isDocsOpen, onToggleDocs, isLogsOpen, onToggleLogs, isActivityOpen, onToggleActivity, activityDisabled, docsDisabled, logsDisabled })`
-- Styling/behavior requirements:
-  - Must be visible only on mobile widths (App.jsx will wrap it with `lg:hidden`).
-  - Header container should have a bottom border and dark theme background consistent with the app (e.g. `border-b border-gray-800 bg-gray-950`).
-  - Hamburger + action buttons must be >= 44px touch target (use Tailwind sizing like `h-11 w-11` and center icons).
-  - Project name must truncate safely (`min-w-0` + `truncate`), and status should be compact (a small pill/badge). Use a simple status-to-class mapping in this file (do not refactor other components in this step).
-  - Buttons must be accessible:
-    - Hamburger: `aria-label` like “Open project drawer” / “Close project drawer”, and `aria-expanded={isSidebarOpen}`.
-    - Activity: `aria-label="Toggle activity log"` and respect `disabled={activityDisabled}`.
-    - Docs/Logs buttons: `disabled` when no project selected; show active styling when `isDocsOpen`/`isLogsOpen`/`isActivityOpen` are true.
-  - Keep the layout single-row and unclipped at 390px width: left hamburger, center project info, right action buttons. Ensure center area uses `min-w-0` so the right buttons don’t push content off-screen.
+Dependencies
+- No new packages needed.
+- Use existing React + Tailwind + Vite setup already in `package.json` / `vite.config.js`.
 
-2) MODIFY `src/client/App.jsx`
-- Add import: `import MobileHeader from './components/MobileHeader.jsx';` (follow existing explicit `.jsx` import style).
-- Replace the current `header={...}` passed to `AppShell` with a header that renders:
-  - Mobile header for `<lg`:
-    - `<div className="lg:hidden"> <MobileHeader ... /> </div>`
-  - Existing desktop header for `lg+`:
-    - Wrap the existing header markup in `<div className="hidden lg:block"> ...existing header content... </div>`
-    - Keep the existing desktop spacing/classes intact (`px-6 ... lg:px-8 ...` etc) so desktop remains unchanged.
-- Wire callbacks to preserve existing overlay-toggle behavior patterns:
-  - `onToggleSidebar`: toggles `isSidebarOpen` and closes `isDocsOpen`, `isLogsOpen`, and `isActivityOpen` (to prevent stacked overlays on mobile).
-  - `onToggleDocs`: toggles `isDocsOpen` and closes `isLogsOpen`, `isActivityOpen`, and `isSidebarOpen`.
-  - `onToggleLogs`: toggles `isLogsOpen` and closes `isDocsOpen`, `isActivityOpen`, and `isSidebarOpen`.
-  - `onToggleActivity`: toggles `isActivityOpen` and closes `isLogsOpen`, `isDocsOpen`, and `isSidebarOpen`.
-- Pass through state booleans for active styling:
-  - `isSidebarOpen={isSidebarOpen}`, `isDocsOpen={isDocsOpen}`, `isLogsOpen={isLogsOpen}`, `isActivityOpen={isActivityOpen}`
-- Pass disable flags:
-  - `activityDisabled={!board}` (match existing desktop Activity button’s `disabled={!board}`)
-  - `docsDisabled={!selectedProject}` and `logsDisabled={!selectedProject}` (match existing desktop Plan/Logs `disabled={!selectedProject}`)
-- Pass project info:
-  - `project={selectedProject}` (MobileHeader should handle null gracefully with a placeholder label like “No project selected”).
+Testing / validation (match repo patterns)
+- Run unit/integration tests: `npm test`
+- Run build: `npm run build`
+- Do NOT run `npm run dev` or `npm start`.
 
-3) MODIFY `package.json`
-- Ensure `npm run build` exists and succeeds:
-  - Under `scripts`, add `"build": "vite build"` (keep `"test": "vitest run"`).
-- Do not add new dependencies for this step.
+Shell command hygiene
+- When running shell commands that include file paths, ALWAYS quote file paths (zsh treats `[...]` as globs).
 
-No new dependencies should be installed for this step.
-
-Testing/verification (must run and pass):
-- `npm test`
-- `npm run build`
-
-Mandatory rules (must include and follow):
-* YOU ARE RUNNING NON-INTERACTIVELY. There is no human to answer questions.
-* NEVER ask for confirmation. NEVER ask clarifying questions. NEVER wait for input.
-* If you encounter unexpected state (dirty files, missing deps, etc), handle it yourself and continue.
-* Ignore any files you didn't create — they are orchestration artifacts.
-* ALL existing tests must still pass
-* npm run build must succeed
-* Do NOT run npm run dev or npm start — they block forever
-* CRITICAL: Running npm run dev or npm start WILL hang your session indefinitely. Never do it.
-* IMPORTANT: When using shell commands, ALWAYS quote file paths (especially Next.js route segments like app/api/foo/[id]/route.ts) because zsh treats [id] as a glob.
+Mandatory rules (include verbatim)
+- YOU ARE RUNNING NON-INTERACTIVELY. There is no human to answer questions.
+- NEVER ask for confirmation. NEVER ask clarifying questions. NEVER wait for input.
+- If you encounter unexpected state (dirty files, missing deps, etc), handle it yourself and continue.
+- Ignore any files you didn't create — they are orchestration artifacts.
+- ALL existing tests must still pass
+- npm run build must succeed
+- Do NOT run npm run dev or npm start — they block forever
+- CRITICAL: Running npm run dev or npm start WILL hang your session indefinitely. Never do it.
+- IMPORTANT: When using shell commands, ALWAYS quote file paths (especially Next.js route segments like app/api/foo/[id]/route.ts) because zsh treats [id] as a glob.
