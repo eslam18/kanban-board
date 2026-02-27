@@ -1,3 +1,8 @@
+# Step 1/8: Repo discovery + baseline snapshots
+# Mode: fresh
+# Timestamp: 2026-02-27T16:23:44Z
+# ─────────────────────────────────────────
+
 You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
