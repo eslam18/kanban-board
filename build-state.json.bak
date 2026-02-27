@@ -20,13 +20,13 @@
     {
       "number": 2,
       "name": "Introduce an AppShell layout contract",
-      "status": "pending",
+      "status": "done",
       "retries": 0,
       "maxRetries": 3,
-      "commitHash": null,
-      "lastError": "aborted by operator (script adoption)",
-      "startedAt": "2026-02-27T20:14:07Z",
-      "completedAt": null
+      "commitHash": "2a8d600c969daf4fafa45270e837c1d23b0f9001",
+      "lastError": null,
+      "startedAt": "2026-02-27T20:48:06Z",
+      "completedAt": "2026-02-27T20:48:27Z"
     },
     {
       "number": 3,
@@ -96,7 +96,7 @@
     }
   ],
   "createdAt": "2026-02-27T15:59:08Z",
-  "updatedAt": "2026-02-27T20:45:01Z",
+  "updatedAt": "2026-02-27T20:48:27Z",
   "lastError": null,
   "escalated": false
 }
