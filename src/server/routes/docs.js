@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 function parsePositiveInt(value) {
   const n = Number(value);
@@ -79,8 +80,28 @@ export function createDocsRouter(dbApi) {
       }
     }
 
+    let repoUrl = null;
+    try {
+      const raw = execSync(`git -C "${projectDir}" remote get-url origin`, { stdio: ['ignore', 'pipe', 'ignore'] })
+        .toString('utf8')
+        .trim();
+      if (raw) {
+        if (raw.startsWith('git@github.com:')) {
+          repoUrl = 'https://github.com/' + raw.replace('git@github.com:', '').replace(/\.git$/, '');
+        } else if (raw.includes('github.com')) {
+          // Strip embedded tokens: https://<token>@github.com/user/repo.git
+          repoUrl = raw.replace(/^https:\/\/[^@]+@github\.com\//, 'https://github.com/').replace(/\.git$/, '');
+        } else {
+          repoUrl = raw;
+        }
+      }
+    } catch {
+      repoUrl = null;
+    }
+
     res.json({
       projectDir,
+      repoUrl,
       docs: {
         'BRIEF.md': { exists: briefExists },
         'DESIGN.md': { exists: designExists, approval },

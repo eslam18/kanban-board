@@ -26,6 +26,7 @@ export default function DocsPanel({ projectId, isOpen, onClose }) {
   const [error, setError] = useState('');
 
   const approval = useMemo(() => docInfo?.docs?.['DESIGN.md']?.approval ?? 'PENDING', [docInfo]);
+  const repoUrl = useMemo(() => docInfo?.repoUrl ?? null, [docInfo]);
   const exists = useMemo(() => docInfo?.docs?.[activeDoc]?.exists ?? false, [docInfo, activeDoc]);
 
   async function loadDocInfo() {
@@ -115,6 +116,17 @@ export default function DocsPanel({ projectId, isOpen, onClose }) {
           <span className="rounded-full bg-gray-800 px-2 py-1 text-xs text-gray-200">
             Approval: <span className={approval === 'APPROVED' ? 'text-green-300' : 'text-yellow-200'}>{approval}</span>
           </span>
+          {repoUrl ? (
+            <a
+              href={repoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full bg-gray-800 px-2 py-1 text-xs text-blue-200 hover:bg-gray-700"
+              title={repoUrl}
+            >
+              Repo
+            </a>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <button
