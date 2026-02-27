@@ -16,6 +16,12 @@ describe('api routes', () => {
     dbApi.close();
   });
 
+  it('returns health check status', async () => {
+    const response = await request(app).get('/api/health').expect(200);
+
+    expect(response.body).toEqual({ ok: true });
+  });
+
   it('creates project and auto-creates board with default columns', async () => {
     const created = await request(app)
       .post('/api/projects')

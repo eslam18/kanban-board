@@ -48,6 +48,7 @@ export default function AppShell({ sidebar, header, isSidebarOpen, onSidebarClos
       <button
         type="button"
         aria-label="Close project drawer"
+        data-testid="app-shell-backdrop"
         onClick={onSidebarClose}
         className={[
           'fixed inset-0 z-40 bg-black/60 transition-opacity duration-200 lg:hidden',
@@ -55,11 +56,12 @@ export default function AppShell({ sidebar, header, isSidebarOpen, onSidebarClos
         ].join(' ')}
       />
 
-      <div className={sidebarContainerClasses}>
+      <div className={sidebarContainerClasses} data-testid="app-shell-drawer">
         <div className="relative h-full">
           <button
             type="button"
             aria-label="Close project drawer"
+            data-testid="app-shell-drawer-close"
             onClick={onSidebarClose}
             className="absolute right-3 top-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-gray-700 bg-gray-900/90 text-gray-100 transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 lg:hidden"
           >

@@ -86,7 +86,7 @@ export default function Board({ board }) {
   return (
     <section className="min-w-0">
       {columns.length > 0 ? (
-        <nav className="mb-3 lg:hidden" aria-label="Column switcher">
+        <nav className="mb-3 lg:hidden" aria-label="Column switcher" data-testid="board-column-switcher">
           <div className="flex min-w-0 gap-2 overflow-x-auto pb-1">
             {columns.map((column) => {
               const columnId = String(column.id);
@@ -114,6 +114,7 @@ export default function Board({ board }) {
       <div
         ref={scrollerRef}
         aria-label="Board columns"
+        data-testid="board-column-scroller"
         className="min-w-0 overflow-x-auto snap-x snap-mandatory scroll-smooth lg:overflow-x-visible lg:snap-none"
       >
         <div className="flex min-w-0 flex-nowrap gap-4">

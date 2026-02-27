@@ -11,6 +11,7 @@ import { createLogRouter } from './routes/log.js';
 import { createProjectsRouter } from './routes/projects.js';
 import { createLogsRouter } from './routes/logs.js';
 import { createDocsRouter } from './routes/docs.js';
+import { createHealthRouter } from './routes/health.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,7 @@ export function createApp(dbApi = createDatabase()) {
   app.use('/api', createLogRouter(dbApi));
   app.use('/api', createLogsRouter(dbApi));
   app.use('/api', createDocsRouter(dbApi));
+  app.use('/api', createHealthRouter());
 
   // Serve the built SPA if present (works in both dev + prod)
   const clientDistPath = path.join(__dirname, '../../dist');

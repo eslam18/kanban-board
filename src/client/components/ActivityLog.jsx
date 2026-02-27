@@ -172,12 +172,17 @@ export default function ActivityLog({ boardId, isOpen, onClose }) {
       <button
         type="button"
         aria-label="Close activity log"
+        data-testid="activity-log-backdrop"
         className={backdropClasses}
         onClick={() => onClose?.()}
       />
 
       <div className="hidden lg:block">
-        <aside className={desktopPanelClasses} aria-hidden={!isOpen}>
+        <aside
+          className={desktopPanelClasses}
+          aria-hidden={!isOpen}
+          data-testid="activity-log-desktop-panel"
+        >
           <div className="mb-4 flex items-center justify-between border-b border-gray-700 pb-3">
             <h2 className="text-lg font-semibold text-gray-100">Recent Activity</h2>
             <button
@@ -193,7 +198,7 @@ export default function ActivityLog({ boardId, isOpen, onClose }) {
         </aside>
       </div>
 
-      <aside className={mobileSheetClasses} aria-hidden={!isOpen}>
+      <aside className={mobileSheetClasses} aria-hidden={!isOpen} data-testid="activity-log-mobile-sheet">
         <div className="px-4 pt-3">
           <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-gray-600/70" aria-hidden="true" />
           <div className="mb-4 flex items-center justify-between border-b border-gray-700 pb-3">
