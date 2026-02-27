@@ -1,4 +1,5 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
@@ -34,12 +35,19 @@ export function createApp(dbApi = createDatabase()) {
   app.use('/api', createLogsRouter(dbApi));
   app.use('/api', createDocsRouter(dbApi));
 
-  if (process.env.NODE_ENV === 'production') {
-    const clientDistPath = path.join(__dirname, '../../dist');
-    app.use(express.static(clientDistPath));
-    app.get(/^(?!\/api).*/, (_req, res) => {
-      res.sendFile(path.join(clientDistPath, 'index.html'));
-    });
+  // Serve the built SPA if present (works in both dev + prod)
+  const clientDistPath = path.join(__dirname, '../../dist');
+  try {
+    // If dist/index.html exists, serve it.
+    // This prevents "Cannot GET /" when running the server directly.
+    if (fs.existsSync(path.join(clientDistPath, 'index.html'))) {
+      app.use(express.static(clientDistPath));
+      app.get(/^(?!\/api).*/, (_req, res) => {
+        res.sendFile(path.join(clientDistPath, 'index.html'));
+      });
+    }
+  } catch {
+    // ignore
   }
 
   return { app, dbApi };
