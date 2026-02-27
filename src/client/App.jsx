@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar.jsx';
 import LogsPanel from './components/LogsPanel.jsx';
 import DocsPanel from './components/DocsPanel.jsx';
 import AppShell from './components/AppShell.jsx';
+import MobileHeader from './components/MobileHeader.jsx';
 
 export default function App() {
   const [projects, setProjects] = useState([]);
@@ -178,56 +179,65 @@ export default function App() {
         isSidebarOpen={isSidebarOpen}
         onSidebarClose={() => setIsSidebarOpen(false)}
         header={(
-          <div className="px-6 pb-0 pt-6 lg:px-8 lg:pt-8">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpen(true)}
-                className="inline-flex items-center rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 lg:hidden"
-              >
-                Projects
-              </button>
+          <div>
+            <div className="lg:hidden">
+              <MobileHeader
+                project={selectedProject}
+                boardId={board?.id}
+                isActivityOpen={isActivityOpen}
+                onOpenSidebar={() => setIsSidebarOpen(true)}
+                onToggleActivity={() => {
+                  setIsActivityOpen((prev) => !prev);
+                  setIsLogsOpen(false);
+                  setIsDocsOpen(false);
+                  setIsSidebarOpen(false);
+                }}
+              />
+            </div>
 
-              <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDocsOpen((prev) => !prev);
-                    setIsLogsOpen(false);
-                    setIsActivityOpen(false);
-                    setIsSidebarOpen(false);
-                  }}
-                  disabled={!selectedProject}
-                  className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Plan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsLogsOpen((prev) => !prev);
-                    setIsDocsOpen(false);
-                    setIsActivityOpen(false);
-                    setIsSidebarOpen(false);
-                  }}
-                  disabled={!selectedProject}
-                  className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Logs
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsActivityOpen((prev) => !prev);
-                    setIsLogsOpen(false);
-                    setIsDocsOpen(false);
-                    setIsSidebarOpen(false);
-                  }}
-                  disabled={!board}
-                  className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Activity
-                </button>
+            <div className="hidden lg:block px-6 pb-0 pt-6 lg:px-8 lg:pt-8">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDocsOpen((prev) => !prev);
+                      setIsLogsOpen(false);
+                      setIsActivityOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    disabled={!selectedProject}
+                    className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Plan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsLogsOpen((prev) => !prev);
+                      setIsDocsOpen(false);
+                      setIsActivityOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    disabled={!selectedProject}
+                    className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Logs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsActivityOpen((prev) => !prev);
+                      setIsLogsOpen(false);
+                      setIsDocsOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    disabled={!board}
+                    className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Activity
+                  </button>
+                </div>
               </div>
             </div>
           </div>
