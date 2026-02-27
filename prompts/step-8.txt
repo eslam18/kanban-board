@@ -1,19 +1,22 @@
-You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 8 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
-This is the first step. Start by setting up the project foundation.
-First, verify .gitignore exists with appropriate entries. Create it if missing.
+Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1), Sidebar → Drawer with backdrop + dismiss (P0), Mobile board layout with horizontal scroll + snap (P0), Card overflow and badge wrapping rules (P0), Activity log mobile experience (P0)
+Build on the existing code. Do not break what already works.
 
-## Your task: Repo discovery + baseline snapshots
+## Your task: Tests, QA hooks, and regression safeguards
 
 Deliverables
-- Document actual frontend/backend entrypoints, routing, and existing layout component(s).
-- Identify current breakpoints and the components responsible for sidebar, board, and activity log.
-- Capture baseline screenshots (desktop + mobile viewport) for comparison.
+- Update/extend Vitest tests for:
+  - Drawer open/close behavior (state + dismiss paths)
+  - Mobile board layout mode selection logic (if conditional)
+- Add `/api/health` endpoint for deterministic smoke testing (optional but recommended).
+- Add a minimal mobile screenshot smoke (manual steps required; Playwright optional).
 
 Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+- All existing tests pass.
+- New tests pass and cover critical mobile behaviors.
+- Desktop layout regressions are not introduced (validated via targeted snapshot/DOM tests and manual checks).
 
 ## Rules (mandatory)
 

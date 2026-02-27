@@ -1,19 +1,24 @@
-You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 4 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
-This is the first step. Start by setting up the project foundation.
-First, verify .gitignore exists with appropriate entries. Create it if missing.
+Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1)
+Build on the existing code. Do not break what already works.
 
-## Your task: Repo discovery + baseline snapshots
+## Your task: Sidebar → Drawer with backdrop + dismiss (P0)
 
 Deliverables
-- Document actual frontend/backend entrypoints, routing, and existing layout component(s).
-- Identify current breakpoints and the components responsible for sidebar, board, and activity log.
-- Capture baseline screenshots (desktop + mobile viewport) for comparison.
+- Drawer component behavior:
+  - Open/close state (hamburger toggles)
+  - Backdrop click closes
+  - Close button closes
+  - ESC closes
+  - Body scroll lock while open
+- Drawer uses fixed positioning and transform transitions (dark theme consistent).
 
 Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+- On 390×844, drawer never overlaps content in a way that blocks closing; backdrop always clickable.
+- No content behind the drawer scrolls while open.
+- Desktop sidebar remains in its current position and styling.
 
 ## Rules (mandatory)
 

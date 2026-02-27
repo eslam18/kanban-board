@@ -1,19 +1,22 @@
-You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 5 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
-This is the first step. Start by setting up the project foundation.
-First, verify .gitignore exists with appropriate entries. Create it if missing.
+Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1), Sidebar → Drawer with backdrop + dismiss (P0)
+Build on the existing code. Do not break what already works.
 
-## Your task: Repo discovery + baseline snapshots
+## Your task: Mobile board layout with horizontal scroll + snap (P0)
 
 Deliverables
-- Document actual frontend/backend entrypoints, routing, and existing layout component(s).
-- Identify current breakpoints and the components responsible for sidebar, board, and activity log.
-- Capture baseline screenshots (desktop + mobile viewport) for comparison.
+- Board columns on mobile become horizontally scrollable with snap:
+  - One column per “page” (column width ≈ viewport width minus padding)
+  - Snap points aligned to each column
+- Add a compact column switcher affordance on mobile:
+  - Either a tab strip that scrolls to the column, or visible column headers that indicate position.
 
 Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+- On 390×844, each column is readable without zooming; user can switch columns reliably.
+- No horizontal overflow caused by cards/badges; the scroll area is intentional and smooth.
+- Desktop continues showing multiple columns as in v3.
 
 ## Rules (mandatory)
 

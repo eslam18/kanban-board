@@ -1,19 +1,20 @@
-You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 3 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
-This is the first step. Start by setting up the project foundation.
-First, verify .gitignore exists with appropriate entries. Create it if missing.
+Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract
+Build on the existing code. Do not break what already works.
 
-## Your task: Repo discovery + baseline snapshots
+## Your task: Implement mobile header (P1)
 
 Deliverables
-- Document actual frontend/backend entrypoints, routing, and existing layout component(s).
-- Identify current breakpoints and the components responsible for sidebar, board, and activity log.
-- Capture baseline screenshots (desktop + mobile viewport) for comparison.
+- Mobile header shown on mobile breakpoints containing:
+  - Hamburger (≥ 44px touch target)
+  - Project name + status (compact, readable)
+  - Activity log button (≥ 44px)
 
 Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+- On 390×844, header fits without clipping; buttons are comfortably tappable.
+- Desktop header/layout remains unchanged (or header is hidden on desktop if not needed).
 
 ## Rules (mandatory)
 

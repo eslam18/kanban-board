@@ -1,19 +1,20 @@
-You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 7 of 8 for Kanban Board Mobile Layout Revamp.
 Read DESIGN.md for the full architecture.
 
-This is the first step. Start by setting up the project foundation.
-First, verify .gitignore exists with appropriate entries. Create it if missing.
+Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1), Sidebar → Drawer with backdrop + dismiss (P0), Mobile board layout with horizontal scroll + snap (P0), Card overflow and badge wrapping rules (P0)
+Build on the existing code. Do not break what already works.
 
-## Your task: Repo discovery + baseline snapshots
+## Your task: Activity log mobile experience (P0)
 
 Deliverables
-- Document actual frontend/backend entrypoints, routing, and existing layout component(s).
-- Identify current breakpoints and the components responsible for sidebar, board, and activity log.
-- Capture baseline screenshots (desktop + mobile viewport) for comparison.
+- Activity log becomes:
+  - Bottom sheet on mobile (preferred), or full-screen overlay if simpler with existing layout
+- Includes backdrop + dismiss behaviors consistent with drawer.
+- Preserves desktop activity log behavior.
 
 Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+- On 390×844, activity log is readable and scrollable without overlapping critical navigation.
+- Can be opened from mobile header and dismissed via backdrop/close/ESC.
 
 ## Rules (mandatory)
 
