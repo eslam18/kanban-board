@@ -18,9 +18,11 @@ export default function Card({ card }) {
 
   return (
     <article className="rounded-lg border border-gray-700 bg-gray-800 p-3.5 transition-colors hover:border-gray-600">
-      <h3 className="text-sm font-semibold text-gray-100">{card.title}</h3>
+      <h3 className="break-words text-sm font-semibold text-gray-100">{card.title}</h3>
 
-      {snippet ? <p className="mt-2 text-xs leading-relaxed text-gray-300">{snippet}</p> : null}
+      {snippet ? (
+        <p className="mt-2 break-words text-xs leading-relaxed text-gray-300">{snippet}</p>
+      ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <span
