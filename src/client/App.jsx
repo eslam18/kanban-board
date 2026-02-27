@@ -17,6 +17,7 @@ export default function App() {
   const [isActivityOpen, setIsActivityOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isDocsOpen, setIsDocsOpen] = useState(false);
+  const [pipelineWarning, setPipelineWarning] = useState(null);
 
   const handleProjectsChange = useCallback((nextProjects, preferredProjectId = null) => {
     const normalizedProjects = Array.isArray(nextProjects) ? nextProjects : [];
@@ -95,14 +96,16 @@ export default function App() {
       setBoard(null);
       setProjectLoading(false);
       setIsActivityOpen(false);
+      setPipelineWarning(null);
       return;
     }
 
     const controller = new AbortController();
+    let intervalId = null;
 
-    async function loadProject() {
+    async function loadProject(showSpinner = true) {
       try {
-        setProjectLoading(true);
+        if (showSpinner) setProjectLoading(true);
         setError('');
 
         const response = await fetch(`/api/projects/${selectedProjectId}`, {
@@ -116,18 +119,41 @@ export default function App() {
         const payload = await response.json();
         setSelectedProject(payload);
         setBoard(payload.board || null);
+
+        const p = payload.pipeline;
+        const shouldWarn =
+          p &&
+          !p.running &&
+          (p.staleLock || p.escalated || p.status === 'escalated' || p.status === 'crashed' || p.lastError);
+
+        if (shouldWarn) {
+          setPipelineWarning({
+            currentStep: p.currentStep,
+            status: p.status,
+            lastError: p.lastError,
+            updatedAt: p.updatedAt,
+            staleLock: p.staleLock,
+          });
+        } else {
+          setPipelineWarning(null);
+        }
       } catch (err) {
         if (err.name !== 'AbortError') {
           setError(err.message || 'Unexpected error');
         }
       } finally {
-        setProjectLoading(false);
+        if (showSpinner) setProjectLoading(false);
       }
     }
 
-    loadProject();
+    // Initial load with spinner, then poll for live updates.
+    loadProject(true);
+    intervalId = setInterval(() => loadProject(false), 2500);
 
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [selectedProjectId]);
 
   return (
@@ -181,6 +207,37 @@ export default function App() {
 
           {!projectsLoading && !error && selectedProject && board && !projectLoading ? (
             <>
+              {pipelineWarning ? (
+                <div className="mb-4 rounded-lg border border-red-700 bg-red-950/60 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-red-200">
+                        Pipeline stopped / crashed
+                      </p>
+                      <p className="mt-1 text-xs text-red-200/80">
+                        Step: {pipelineWarning.currentStep ?? 'unknown'} | Status: {pipelineWarning.status ?? 'unknown'}
+                        {pipelineWarning.updatedAt ? ` | Updated: ${pipelineWarning.updatedAt}` : ''}
+                        {pipelineWarning.staleLock ? ' | Stale lock detected' : ''}
+                      </p>
+                      {pipelineWarning.lastError ? (
+                        <p className="mt-2 whitespace-pre-wrap text-xs text-red-100">
+                          {pipelineWarning.lastError}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setIsLogsOpen(true); setIsDocsOpen(false); setIsActivityOpen(false); }}
+                        className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-600"
+                      >
+                        View logs
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               <ProjectHeader project={selectedProject} onProjectUpdated={handleProjectUpdated} />
               <Board board={board} />
             </>

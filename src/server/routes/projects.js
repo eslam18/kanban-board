@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 function parsePositiveInt(value) {
   const n = Number(value);
@@ -48,9 +51,80 @@ export function createProjectsRouter(dbApi) {
 
     const board = project.board_id ? dbApi.getBoardWithDetails(project.board_id) : null;
 
+    let repoUrl = null;
+    let pipeline = null;
+
+    if (project.project_dir) {
+      const projectDir = project.project_dir;
+
+      // Repo URL
+      try {
+        const raw = execSync(`git -C "${projectDir}" remote get-url origin`, { stdio: ['ignore', 'pipe', 'ignore'] })
+          .toString('utf8')
+          .trim();
+        if (raw) {
+          if (raw.startsWith('git@github.com:')) {
+            repoUrl = 'https://github.com/' + raw.replace('git@github.com:', '').replace(/\.git$/, '');
+          } else if (raw.includes('github.com')) {
+            repoUrl = raw.replace(/^https:\/\/[^@]+@github\.com\//, 'https://github.com/').replace(/\.git$/, '');
+          } else {
+            repoUrl = raw;
+          }
+        }
+      } catch {
+        repoUrl = null;
+      }
+
+      // Pipeline status
+      try {
+        const lockPath = path.join(projectDir, '.pipeline.lock');
+        let pid = null;
+        let running = false;
+        let staleLock = false;
+
+        if (fs.existsSync(lockPath)) {
+          const txt = fs.readFileSync(lockPath, 'utf8').trim();
+          const n = Number(txt);
+          if (Number.isInteger(n) && n > 0) {
+            pid = n;
+            try {
+              process.kill(pid, 0);
+              running = true;
+            } catch {
+              staleLock = true;
+            }
+          } else {
+            staleLock = true;
+          }
+        }
+
+        const statePath = path.join(projectDir, 'build-state.json');
+        let state = null;
+        if (fs.existsSync(statePath)) {
+          state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        }
+
+        pipeline = {
+          running,
+          pid,
+          staleLock,
+          status: state?.status ?? null,
+          escalated: state?.escalated ?? false,
+          phase: state?.phase ?? null,
+          currentStep: state?.currentStep ?? null,
+          lastError: state?.lastError ?? null,
+          updatedAt: state?.updatedAt ?? null,
+        };
+      } catch {
+        pipeline = null;
+      }
+    }
+
     res.json({
       ...project,
       board,
+      repoUrl,
+      pipeline,
     });
   });
 

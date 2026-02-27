@@ -55,9 +55,27 @@ export default function ProjectHeader({ project, onProjectUpdated }) {
     <header className="mb-5 border-b border-gray-800 pb-5">
       <div className="flex flex-wrap items-start gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-100">
-            {project.name}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-100">
+              {project.name}
+            </h1>
+            {project.repoUrl ? (
+              <a
+                href={project.repoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-gray-900 px-2 py-1 text-xs font-semibold text-blue-200 hover:bg-gray-800"
+                title={project.repoUrl}
+              >
+                Repo
+              </a>
+            ) : null}
+            {project.pipeline?.running ? (
+              <span className="rounded-full bg-emerald-900 px-2 py-1 text-xs font-semibold text-emerald-200">
+                Pipeline running
+              </span>
+            ) : null}
+          </div>
           <p className="mt-1 text-sm text-gray-400">
             {project.description && project.description.trim() ? project.description : 'No description'}
           </p>
