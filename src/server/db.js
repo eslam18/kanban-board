@@ -220,7 +220,7 @@ function createDbApi(db) {
       return getProject(id);
     }
 
-    const allowedFields = new Set(['name', 'description', 'status']);
+    const allowedFields = new Set(['name', 'description', 'status', 'project_dir']);
     const validEntries = entries.filter(([field]) => allowedFields.has(field));
 
     if (validEntries.length === 0) {

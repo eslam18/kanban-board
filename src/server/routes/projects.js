@@ -61,7 +61,7 @@ export function createProjectsRouter(dbApi) {
       return;
     }
 
-    const { name, description, status } = req.body ?? {};
+    const { name, description, status, project_dir } = req.body ?? {};
     const updates = {};
 
     if (name !== undefined) {
@@ -78,6 +78,14 @@ export function createProjectsRouter(dbApi) {
         return;
       }
       updates.description = description;
+    }
+
+    if (project_dir !== undefined) {
+      if (typeof project_dir !== 'string') {
+        res.status(400).json({ error: 'project_dir must be a string' });
+        return;
+      }
+      updates.project_dir = project_dir;
     }
 
     if (status !== undefined) {
