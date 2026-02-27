@@ -4,6 +4,7 @@ import ActivityLog from './components/ActivityLog.jsx';
 import ProjectHeader from './components/ProjectHeader.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import LogsPanel from './components/LogsPanel.jsx';
+import DocsPanel from './components/DocsPanel.jsx';
 
 export default function App() {
   const [projects, setProjects] = useState([]);
@@ -15,6 +16,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [isActivityOpen, setIsActivityOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [isDocsOpen, setIsDocsOpen] = useState(false);
 
   const handleProjectsChange = useCallback((nextProjects, preferredProjectId = null) => {
     const normalizedProjects = Array.isArray(nextProjects) ? nextProjects : [];
@@ -142,7 +144,15 @@ export default function App() {
           <div className="mb-4 flex items-center justify-end">
             <button
               type="button"
-              onClick={() => { setIsLogsOpen((prev) => !prev); setIsActivityOpen(false); }}
+              onClick={() => { setIsDocsOpen((prev) => !prev); setIsLogsOpen(false); setIsActivityOpen(false); }}
+              disabled={!selectedProject}
+              className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Plan
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsLogsOpen((prev) => !prev); setIsDocsOpen(false); setIsActivityOpen(false); }}
               disabled={!selectedProject}
               className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -150,7 +160,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => { setIsActivityOpen((prev) => !prev); setIsLogsOpen(false); }}
+              onClick={() => { setIsActivityOpen((prev) => !prev); setIsLogsOpen(false); setIsDocsOpen(false); }}
               disabled={!board}
               className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -190,6 +200,14 @@ export default function App() {
         isOpen={isActivityOpen}
         onClose={() => setIsActivityOpen(false)}
       />
+
+      {isDocsOpen && (
+        <DocsPanel
+          projectId={selectedProjectId}
+          isOpen={isDocsOpen}
+          onClose={() => setIsDocsOpen(false)}
+        />
+      )}
 
       {isLogsOpen && (
         <LogsPanel

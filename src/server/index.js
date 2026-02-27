@@ -9,6 +9,7 @@ import { createCardsRouter } from './routes/cards.js';
 import { createLogRouter } from './routes/log.js';
 import { createProjectsRouter } from './routes/projects.js';
 import { createLogsRouter } from './routes/logs.js';
+import { createDocsRouter } from './routes/docs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +32,7 @@ export function createApp(dbApi = createDatabase()) {
   app.use('/api', createCardsRouter(dbApi));
   app.use('/api', createLogRouter(dbApi));
   app.use('/api', createLogsRouter(dbApi));
+  app.use('/api', createDocsRouter(dbApi));
 
   if (process.env.NODE_ENV === 'production') {
     const clientDistPath = path.join(__dirname, '../../dist');
