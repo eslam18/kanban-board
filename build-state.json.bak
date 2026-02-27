@@ -32,7 +32,7 @@
       "number": 3,
       "name": "Implement mobile header (P1)",
       "status": "failed",
-      "retries": 0,
+      "retries": 1,
       "maxRetries": 3,
       "commitHash": null,
       "lastError": "exit:1 commit:true tests:true",
@@ -96,7 +96,7 @@
     }
   ],
   "createdAt": "2026-02-27T15:59:08Z",
-  "updatedAt": "2026-02-27T20:53:59Z",
+  "updatedAt": "2026-02-27T20:54:25Z",
   "lastError": "exit:1 commit:true tests:true",
   "escalated": false
 }
