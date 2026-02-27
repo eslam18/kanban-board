@@ -1,5 +1,5 @@
 # Mobile Baseline (Step 1/8: Repo discovery + baseline snapshots)
-Generated: 2026-02-27T18:01:56Z
+Generated: 2026-02-27T18:02:05Z
 
 ## Entrypoints
 - Client entry: src/client/main.jsx
