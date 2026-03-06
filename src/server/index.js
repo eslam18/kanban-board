@@ -12,6 +12,8 @@ import { createProjectsRouter } from './routes/projects.js';
 import { createLogsRouter } from './routes/logs.js';
 import { createDocsRouter } from './routes/docs.js';
 import { createHealthRouter } from './routes/health.js';
+import { createAuthRouter } from './routes/auth.js';
+import { createAuthMiddleware } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,13 +33,16 @@ export function createApp(dbApi = createDatabase()) {
   app.use(cors());
   app.use(express.json());
 
+  app.use('/api', createHealthRouter());
+  app.use('/api', createAuthRouter(dbApi));
+  app.use('/api', createAuthMiddleware(dbApi));
+
   app.use('/api', createProjectsRouter(dbApi));
   app.use('/api', createBoardsRouter(dbApi));
   app.use('/api', createCardsRouter(dbApi));
   app.use('/api', createLogRouter(dbApi));
   app.use('/api', createLogsRouter(dbApi));
   app.use('/api', createDocsRouter(dbApi));
-  app.use('/api', createHealthRouter());
 
   // Serve the built SPA if present (works in both dev + prod)
   const clientDistPath = path.join(__dirname, '../../dist');

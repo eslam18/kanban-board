@@ -2,14 +2,31 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDatabase } from '../src/server/db.js';
 import { createApp } from '../src/server/index.js';
+import { seedDefaultAdmin } from '../src/server/seed.js';
 
 describe('api routes', () => {
   let dbApi;
   let app;
+  let authHeader;
 
-  beforeEach(() => {
+  function auth(testRequest) {
+    return testRequest.set('Authorization', authHeader);
+  }
+
+  beforeEach(async () => {
     dbApi = createDatabase(':memory:');
+    seedDefaultAdmin(dbApi);
     ({ app } = createApp(dbApi));
+
+    const email = process.env.ADMIN_EMAIL || 'admin@qanat.local';
+    const password = process.env.ADMIN_PASSWORD || 'changeme';
+
+    const loginResponse = await request(app)
+      .post('/api/auth/login')
+      .send({ email, password })
+      .expect(200);
+
+    authHeader = `Bearer ${loginResponse.body.token}`;
   });
 
   afterEach(() => {
@@ -22,9 +39,23 @@ describe('api routes', () => {
     expect(response.body).toEqual({ ok: true });
   });
 
+  it('returns 401 for unauthenticated protected routes', async () => {
+    await request(app).get('/api/boards').expect(401);
+  });
+
+  it('returns current user profile from auth/me', async () => {
+    const response = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', authHeader)
+      .expect(200);
+
+    expect(response.body.email).toBe(process.env.ADMIN_EMAIL || 'admin@qanat.local');
+    expect(response.body.role).toBe('admin');
+    expect(response.body.password_hash).toBeUndefined();
+  });
+
   it('creates project and auto-creates board with default columns', async () => {
-    const created = await request(app)
-      .post('/api/projects')
+    const created = await auth(request(app).post('/api/projects'))
       .send({ name: 'Kanban Board v2', description: 'Multi-project support' })
       .expect(201);
 
@@ -34,7 +65,7 @@ describe('api routes', () => {
     expect(created.body.status).toBe('active');
     expect(created.body.board_id).toBeTypeOf('number');
 
-    const board = await request(app).get(`/api/boards/${created.body.board_id}`).expect(200);
+    const board = await auth(request(app).get(`/api/boards/${created.body.board_id}`)).expect(200);
     expect(board.body.columns.map((column) => column.name)).toEqual([
       'Backlog',
       'In Progress',
@@ -44,10 +75,10 @@ describe('api routes', () => {
   });
 
   it('lists projects', async () => {
-    await request(app).post('/api/projects').send({ name: 'Project A' }).expect(201);
-    await request(app).post('/api/projects').send({ name: 'Project B' }).expect(201);
+    await auth(request(app).post('/api/projects')).send({ name: 'Project A' }).expect(201);
+    await auth(request(app).post('/api/projects')).send({ name: 'Project B' }).expect(201);
 
-    const response = await request(app).get('/api/projects').expect(200);
+    const response = await auth(request(app).get('/api/projects')).expect(200);
 
     expect(response.body).toHaveLength(2);
     expect(response.body[0].name).toBe('Project A');
@@ -56,7 +87,9 @@ describe('api routes', () => {
   });
 
   it('gets project with full board details', async () => {
-    const created = await request(app).post('/api/projects').send({ name: 'Project Details' }).expect(201);
+    const created = await auth(request(app).post('/api/projects'))
+      .send({ name: 'Project Details' })
+      .expect(201);
 
     const board = dbApi.getBoardWithDetails(created.body.board_id);
     const backlog = board.columns.find((column) => column.name === 'Backlog');
@@ -68,7 +101,7 @@ describe('api routes', () => {
       position: 0,
     });
 
-    const response = await request(app).get(`/api/projects/${created.body.id}`).expect(200);
+    const response = await auth(request(app).get(`/api/projects/${created.body.id}`)).expect(200);
 
     expect(response.body.id).toBe(created.body.id);
     expect(response.body.board.id).toBe(created.body.board_id);
@@ -78,10 +111,11 @@ describe('api routes', () => {
   });
 
   it('updates project status', async () => {
-    const created = await request(app).post('/api/projects').send({ name: 'Project Status' }).expect(201);
+    const created = await auth(request(app).post('/api/projects'))
+      .send({ name: 'Project Status' })
+      .expect(201);
 
-    const response = await request(app)
-      .patch(`/api/projects/${created.body.id}`)
+    const response = await auth(request(app).patch(`/api/projects/${created.body.id}`))
       .send({ status: 'completed' })
       .expect(200);
 
@@ -89,7 +123,9 @@ describe('api routes', () => {
   });
 
   it('deletes a project and cascades board/column/card deletion', async () => {
-    const created = await request(app).post('/api/projects').send({ name: 'Project Delete' }).expect(201);
+    const created = await auth(request(app).post('/api/projects'))
+      .send({ name: 'Project Delete' })
+      .expect(201);
 
     const board = dbApi.getBoardWithDetails(created.body.board_id);
     const backlog = board.columns.find((column) => column.name === 'Backlog');
@@ -101,10 +137,10 @@ describe('api routes', () => {
       position: 0,
     });
 
-    await request(app).delete(`/api/projects/${created.body.id}`).expect(204);
+    await auth(request(app).delete(`/api/projects/${created.body.id}`)).expect(204);
 
-    await request(app).get(`/api/projects/${created.body.id}`).expect(404);
-    await request(app).get(`/api/boards/${created.body.board_id}`).expect(404);
+    await auth(request(app).get(`/api/projects/${created.body.id}`)).expect(404);
+    await auth(request(app).get(`/api/boards/${created.body.board_id}`)).expect(404);
 
     const remainingColumns = dbApi.db
       .prepare('SELECT COUNT(*) AS count FROM columns WHERE board_id = ?')
@@ -116,15 +152,14 @@ describe('api routes', () => {
   });
 
   it('creates and lists boards', async () => {
-    const created = await request(app)
-      .post('/api/boards')
+    const created = await auth(request(app).post('/api/boards'))
       .send({ name: 'Kanban Board Build' })
       .expect(201);
 
     expect(created.body.id).toBeTypeOf('number');
     expect(created.body.name).toBe('Kanban Board Build');
 
-    const list = await request(app).get('/api/boards').expect(200);
+    const list = await auth(request(app).get('/api/boards')).expect(200);
     expect(list.body).toHaveLength(1);
     expect(list.body[0].id).toBe(created.body.id);
   });
@@ -140,7 +175,7 @@ describe('api routes', () => {
       position: 0,
     });
 
-    const response = await request(app).get(`/api/boards/${board.id}`).expect(200);
+    const response = await auth(request(app).get(`/api/boards/${board.id}`)).expect(200);
 
     expect(response.body.id).toBe(board.id);
     expect(response.body.columns).toHaveLength(1);
@@ -152,8 +187,7 @@ describe('api routes', () => {
     const board = dbApi.createBoard('Default Board');
     const backlog = dbApi.createColumn(board.id, 'Backlog', 0);
 
-    const response = await request(app)
-      .post(`/api/boards/${board.id}/cards`)
+    const response = await auth(request(app).post(`/api/boards/${board.id}/cards`))
       .send({
         columnId: backlog.id,
         title: 'Step 2: Build API',
@@ -179,8 +213,7 @@ describe('api routes', () => {
       retries: 0,
     });
 
-    const response = await request(app)
-      .patch(`/api/cards/${card.id}`)
+    const response = await auth(request(app).patch(`/api/cards/${card.id}`))
       .send({ status: 'building', retries: 1, description: 'In progress now' })
       .expect(200);
 
@@ -202,15 +235,14 @@ describe('api routes', () => {
       retries: 0,
     });
 
-    const response = await request(app)
-      .patch(`/api/cards/${card.id}`)
+    const response = await auth(request(app).patch(`/api/cards/${card.id}`))
       .send({ columnId: done.id, position: 3, status: 'done' })
       .expect(200);
 
     expect(response.body.column_id).toBe(done.id);
     expect(response.body.position).toBe(3);
 
-    const boardDetails = await request(app).get(`/api/boards/${board.id}`).expect(200);
+    const boardDetails = await auth(request(app).get(`/api/boards/${board.id}`)).expect(200);
     const backlogCards = boardDetails.body.columns.find((c) => c.id === backlog.id).cards;
     const doneCards = boardDetails.body.columns.find((c) => c.id === done.id).cards;
 
@@ -231,9 +263,9 @@ describe('api routes', () => {
       retries: 0,
     });
 
-    await request(app).delete(`/api/cards/${card.id}`).expect(204);
+    await auth(request(app).delete(`/api/cards/${card.id}`)).expect(204);
 
-    const boardDetails = await request(app).get(`/api/boards/${board.id}`).expect(200);
+    const boardDetails = await auth(request(app).get(`/api/boards/${board.id}`)).expect(200);
     expect(boardDetails.body.columns[0].cards).toHaveLength(0);
   });
 
@@ -249,8 +281,7 @@ describe('api routes', () => {
       retries: 0,
     });
 
-    const created = await request(app)
-      .post(`/api/boards/${board.id}/log`)
+    const created = await auth(request(app).post(`/api/boards/${board.id}/log`))
       .send({ message: 'Card created', type: 'info', cardId: card.id })
       .expect(201);
 
@@ -258,12 +289,11 @@ describe('api routes', () => {
     expect(created.body.card_id).toBe(card.id);
     expect(created.body.message).toBe('Card created');
 
-    await request(app)
-      .post(`/api/boards/${board.id}/log`)
+    await auth(request(app).post(`/api/boards/${board.id}/log`))
       .send({ message: 'Board healthy', type: 'success' })
       .expect(201);
 
-    const log = await request(app).get(`/api/boards/${board.id}/log`).expect(200);
+    const log = await auth(request(app).get(`/api/boards/${board.id}/log`)).expect(200);
     expect(log.body).toHaveLength(2);
     expect(log.body[0].message).toBe('Board healthy');
     expect(log.body[1].message).toBe('Card created');
