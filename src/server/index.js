@@ -13,6 +13,7 @@ import { createLogsRouter } from './routes/logs.js';
 import { createDocsRouter } from './routes/docs.js';
 import { createHealthRouter } from './routes/health.js';
 import { createAuthRouter } from './routes/auth.js';
+import { createInvitesRouter } from './routes/invites.js';
 import { createAuthMiddleware } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,6 +37,7 @@ export function createApp(dbApi = createDatabase()) {
   app.use('/api', createHealthRouter());
   app.use('/api', createAuthRouter(dbApi));
   app.use('/api', createAuthMiddleware(dbApi));
+  app.use('/api', createInvitesRouter(dbApi));
 
   app.use('/api', createProjectsRouter(dbApi));
   app.use('/api', createBoardsRouter(dbApi));
