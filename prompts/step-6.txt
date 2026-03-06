@@ -1,20 +1,25 @@
-You are building Step 6 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 6 of 6 for Qanat: Kanban Board Auth & Multi-Tenancy.
 Read DESIGN.md for the full architecture.
 
-Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1), Sidebar → Drawer with backdrop + dismiss (P0), Mobile board layout with horizontal scroll + snap (P0)
+Previous steps completed: Database Schema & Auth Utilities, Auth Middleware & Login API, Invite System API, Change Password Flow, Login UI & Auth Context
 Build on the existing code. Do not break what already works.
 
-## Your task: Card overflow and badge wrapping rules (P0)
+## Your task: Admin User Management UI
 
-Deliverables
-- Update card layout to prevent overflow:
-  - Long titles/descriptions wrap or truncate predictably.
-  - Pills/badges wrap to new lines or truncate with max width.
-  - Ensure internal flex rows use `min-w-0` where necessary.
+Deliverables:
+- AdminUsersPage.tsx — table of users with role/status
+- Ability to change user role (admin/member)
+- Ability to disable/enable users
+- Invite creation form (email + role)
+- Link to admin page in sidebar (admin only)
+- Seed script updates: ensure admin user exists on fresh DB
 
-Acceptance criteria
-- On 390×844, no text overlaps other UI; no card content renders outside card boundaries.
-- Touch targets inside cards remain ≥ 44px where interactive.
+Acceptance criteria:
+- Admin sees user management in sidebar
+- Members don't see admin link
+- Admin can invite, change roles, disable users
+- All actions reflected immediately in UI
+- Existing board/card/project functionality unbroken
 
 ## Rules (mandatory)
 
@@ -36,3 +41,17 @@ Responsive requirement:
 - Follow DESIGN.md section: 'Responsive / Mobile Layout'
 - If you touch UI/layout, ensure it remains usable on mobile widths (e.g., 390px). Avoid overlap/clipping.
 - Prefer responsive Tailwind classes (sm/md/lg) over fixed widths.
+
+Feature requirements:
+- Implement ALL items in DESIGN.md 'Feature Checklist' (MUST scope). Do not silently skip features.
+- Do NOT implement SHOULD/LATER scope unless a MUST item depends on it.
+- Follow DESIGN.md 'Assumptions' + 'User Flows' — do not underbuild just because the brief is short.
+
+UI / UX quality bar:
+- Follow DESIGN.md section: 'UI / UX Quality Bar' (or write N/A in design for non-UI projects).
+- Default to a modern component kit (shadcn/ui + lucide-react) unless the design forbids it.
+- Ship professional states: hover/focus/disabled, empty states, loading states, error messaging.
+- Ensure typography + spacing feel deliberate (not raw HTML defaults).
+- Accessibility: labels for inputs, aria-labels for icon-only buttons, visible focus.
+
+If you believe a checklist item is impossible within this step: still implement the best partial, and leave a TODO in code + log it in a test or comment — never silently omit.

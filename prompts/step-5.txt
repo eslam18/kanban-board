@@ -1,22 +1,25 @@
-You are building Step 5 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 5 of 6 for Qanat: Kanban Board Auth & Multi-Tenancy.
 Read DESIGN.md for the full architecture.
 
-Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1), Sidebar → Drawer with backdrop + dismiss (P0)
+Previous steps completed: Database Schema & Auth Utilities, Auth Middleware & Login API, Invite System API, Change Password Flow
 Build on the existing code. Do not break what already works.
 
-## Your task: Mobile board layout with horizontal scroll + snap (P0)
+## Your task: Login UI & Auth Context
 
-Deliverables
-- Board columns on mobile become horizontally scrollable with snap:
-  - One column per “page” (column width ≈ viewport width minus padding)
-  - Snap points aligned to each column
-- Add a compact column switcher affordance on mobile:
-  - Either a tab strip that scrolls to the column, or visible column headers that indicate position.
+Deliverables:
+- AuthContext.tsx — stores JWT, user info, login/logout functions
+- LoginPage.tsx — email + password form, error handling
+- RegisterPage.tsx — invite acceptance form
+- ProtectedRoute.tsx — redirects to login if not authenticated
+- Wrap existing app routes in ProtectedRoute
+- Add logout button to sidebar/header
 
-Acceptance criteria
-- On 390×844, each column is readable without zooming; user can switch columns reliably.
-- No horizontal overflow caused by cards/badges; the scroll area is intentional and smooth.
-- Desktop continues showing multiple columns as in v3.
+Acceptance criteria:
+- Unauthenticated users see login page
+- After login, redirected to board
+- After logout, redirected to login
+- Register page accessible via invite link
+- Mobile layout still works correctly
 
 ## Rules (mandatory)
 
@@ -38,3 +41,17 @@ Responsive requirement:
 - Follow DESIGN.md section: 'Responsive / Mobile Layout'
 - If you touch UI/layout, ensure it remains usable on mobile widths (e.g., 390px). Avoid overlap/clipping.
 - Prefer responsive Tailwind classes (sm/md/lg) over fixed widths.
+
+Feature requirements:
+- Implement ALL items in DESIGN.md 'Feature Checklist' (MUST scope). Do not silently skip features.
+- Do NOT implement SHOULD/LATER scope unless a MUST item depends on it.
+- Follow DESIGN.md 'Assumptions' + 'User Flows' — do not underbuild just because the brief is short.
+
+UI / UX quality bar:
+- Follow DESIGN.md section: 'UI / UX Quality Bar' (or write N/A in design for non-UI projects).
+- Default to a modern component kit (shadcn/ui + lucide-react) unless the design forbids it.
+- Ship professional states: hover/focus/disabled, empty states, loading states, error messaging.
+- Ensure typography + spacing feel deliberate (not raw HTML defaults).
+- Accessibility: labels for inputs, aria-labels for icon-only buttons, visible focus.
+
+If you believe a checklist item is impossible within this step: still implement the best partial, and leave a TODO in code + log it in a test or comment — never silently omit.

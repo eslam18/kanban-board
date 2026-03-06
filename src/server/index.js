@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import { createDatabase } from './db.js';
-import { seedDefaultBoard } from './seed.js';
+import { seedDefaultAdmin, seedDefaultBoard } from './seed.js';
 import { createBoardsRouter } from './routes/boards.js';
 import { createCardsRouter } from './routes/cards.js';
 import { createLogRouter } from './routes/log.js';
@@ -17,6 +17,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function ensureSeeded(dbApi) {
+  seedDefaultAdmin(dbApi);
+
   const row = dbApi.db.prepare('SELECT COUNT(*) AS count FROM projects').get();
   if (row.count === 0) {
     seedDefaultBoard(dbApi);

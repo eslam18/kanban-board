@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDatabase } from '../src/server/db.js';
+import { seedDefaultAdmin } from '../src/server/seed.js';
+import { verifyPasswordSync } from '../src/server/auth/password.js';
 
 describe('db layer', () => {
   let dbApi;
@@ -10,6 +12,66 @@ describe('db layer', () => {
 
   afterEach(() => {
     dbApi.close();
+  });
+
+  it('creates auth tables in schema migration', () => {
+    const tableNames = dbApi.db
+      .prepare(
+        `
+          SELECT name
+          FROM sqlite_master
+          WHERE type = 'table'
+            AND name IN ('users', 'invites', 'sessions')
+          ORDER BY name ASC
+        `,
+      )
+      .all()
+      .map((row) => row.name);
+
+    expect(tableNames).toEqual(['invites', 'sessions', 'users']);
+  });
+
+  it('seeds the default admin user on a fresh database', () => {
+    const seededAdmin = seedDefaultAdmin(dbApi);
+
+    expect(seededAdmin).toBeTruthy();
+    expect(seededAdmin.email).toBe(process.env.ADMIN_EMAIL || 'admin@qanat.local');
+    expect(seededAdmin.role).toBe('admin');
+    expect(seededAdmin.status).toBe('active');
+
+    const storedUser = dbApi.db
+      .prepare(
+        `
+          SELECT id, email, password_hash, role, status
+          FROM users
+          WHERE email = ?
+          LIMIT 1
+        `,
+      )
+      .get(process.env.ADMIN_EMAIL || 'admin@qanat.local');
+
+    expect(storedUser).toBeTruthy();
+    expect(verifyPasswordSync(process.env.ADMIN_PASSWORD || 'changeme', storedUser.password_hash)).toBe(
+      true,
+    );
+  });
+
+  it('does not seed default admin when users already exist', () => {
+    dbApi.db
+      .prepare(
+        `
+          INSERT INTO users (email, password_hash, display_name, role, status)
+          VALUES (?, ?, ?, ?, ?)
+        `,
+      )
+      .run('member@qanat.local', 'placeholder-hash', 'Existing Member', 'member', 'active');
+
+    const seededAdmin = seedDefaultAdmin(dbApi);
+    const users = dbApi.db.prepare(`SELECT id, email FROM users ORDER BY id ASC`).all();
+
+    expect(seededAdmin).toBe(null);
+    expect(users).toHaveLength(1);
+    expect(users[0].email).toBe('member@qanat.local');
   });
 
   it('creates a board', () => {
@@ -152,4 +214,3 @@ describe('db layer', () => {
     expect(log[1].card_id).toBe(card.id);
   });
 });
-

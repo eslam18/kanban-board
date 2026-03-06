@@ -1,209 +1,261 @@
-# DESIGN.md — Kanban Board Mobile Layout Revamp
+# DESIGN.md — Qanat: Kanban Board Auth & Multi-Tenancy
 APPROVAL: APPROVED
 
+## Product Tier
+Small
+
 ## Goal
-Make the existing Kanban board mobile-first usable on iPhone-sized screens (390×844) while preserving the current v3 desktop layout, dark theme, and test suite.
+Add authentication, role-based access control, user invites, and admin management to the existing Kanban board. Users log in, see only their boards, and admins manage users/invites.
 
 ## Non-Goals
-- Migrating the app to Next.js or changing the overall architecture.
-- Changing DB schema, data migrations, or altering persisted data shapes.
-- Major desktop UI redesign beyond non-breaking layout safeguards.
+- OAuth/SSO (email+password only for now)
+- Per-board permissions (all boards visible to all org members)
+- Public/shared boards
+- Password reset via email (admin resets for now)
 
 ## Constraints
-- No DB schema changes.
-- No breaking desktop layout (desktop must remain visually consistent with v3).
-- Keep dark theme.
-- Keep all existing tests passing (and extend coverage where appropriate).
+- Must not break existing board functionality (columns, cards, drag-drop, activity log, mobile layout)
+- SQLite remains the database
+- No external auth services — self-contained JWT auth
+- Existing API endpoints gain auth middleware but keep their contracts
+
+## Assumptions
+- Single-tenant deployment (one org per instance)
+- Admin seeds on first run; all other users arrive via invite
+- JWT tokens stored in localStorage (acceptable for internal tool)
 
 ## Tech Stack
 - Frontend: React + Vite, TypeScript, Tailwind CSS (dark theme)
-- Backend: Express (Node.js), SQLite
-- Tests: Vitest (and existing frontend testing stack in-repo, if present)
-- Optional for QA automation (only if acceptable to add): Playwright for mobile screenshot smoke
+- Backend: Express (Node.js), SQLite, bcrypt, jsonwebtoken
+- Tests: Vitest
 
-## Data Model
-No changes. Existing SQLite schema and entities remain as-is (projects/boards, columns, cards, activity log, etc.). Any new server endpoints must be read-only or derived from existing data.
+## Scope Cutline
+### MUST
+- Login/logout with email+password
+- JWT auth middleware on all existing endpoints
+- Admin can invite users via email token
+- Invited users can register (set password)
+- Change password (self-service)
+- Admin user management (list, change role, disable)
+- Seed default admin on fresh DB
 
-## API Surface
-No breaking changes to existing endpoints.
+### SHOULD
+- Remember me / token refresh
+- Invite expiry enforcement
 
-Additive (recommended to enable deterministic smoke tests):
-- GET `/api/health` → `{ ok: true }` (no auth; safe for local/CI)
-- If an activity log endpoint already exists, keep as-is; otherwise avoid introducing new data contracts and keep activity log UI driven by existing API(s).
+### LATER
+- OAuth/SSO providers
+- Password reset via email
+- Per-board access control
+- Audit log for auth events
 
-## File Structure
-Expected/targeted areas (adjust to actual repo layout during Step 1 discovery):
-- Frontend shell/layout
-  - `src/components/AppShell.tsx` (or similar): header + sidebar + content region orchestration
-  - `src/components/Sidebar.tsx`: desktop sidebar + mobile drawer variant
-  - `src/components/MobileHeader.tsx`: compact mobile header (project name/status/actions)
-- Board layout
-  - `src/components/Board/BoardView.tsx`: column container responsive behavior
-  - `src/components/Board/Column.tsx`: column sizing and header
-  - `src/components/Board/Card.tsx`: card overflow/wrapping rules
-- Activity log UI
-  - `src/components/ActivityLog/ActivityLogPanel.tsx`: desktop panel + mobile sheet/overlay
-- Backend (optional additive endpoint)
-  - `server/src/routes/health.ts` or `server/src/index.ts` (Express route registration)
+## Feature Checklist
+- [x] Database schema (users, invites, sessions tables)
+- [x] Auth middleware (JWT verify + role check)
+- [x] Login API + UI
+- [x] Register via invite API + UI
+- [x] Change password API + UI
+- [x] Admin user management API + UI
+- [x] Admin invite management API + UI
+- [x] Default admin seed
+
+## User Flows
+### Login
+1. User navigates to app → sees login page
+2. Enters email + password → POST /api/auth/login
+3. Gets JWT → stored in localStorage → redirected to board
+
+### Invite + Register
+1. Admin creates invite (email + role) → POST /api/invites
+2. System generates token/link
+3. Invited user opens link → register page
+4. Sets password + display name → POST /api/auth/register
+5. Account created → redirected to login
+
+### Change Password
+1. User clicks profile/settings → change password modal
+2. Enters old + new password → POST /api/auth/change-password
+3. Success feedback → stays logged in
+
+### Admin User Management
+1. Admin clicks "Users" in sidebar → user management page
+2. Sees user table (email, role, status, joined)
+3. Can change role (admin/member), disable/enable users
+4. Can create new invites
 
 ## Responsive / Mobile Layout
-### Breakpoint assumptions
-- Mobile: `< 640px` (Tailwind `sm`), with primary target 390×844.
-- Tablet: `640–1023px` (Tailwind `sm` to `<lg`) treated as “mobile behaviors allowed” where it improves usability.
-- Desktop: `≥ 1024px` (Tailwind `lg`) must match current v3.
+- Login page: centered card, works on mobile naturally
+- Register page: same as login
+- Admin users page: responsive table (stacks on mobile)
+- Change password modal: standard modal, mobile-friendly
+- All new UI follows existing dark theme + Tailwind patterns
+- No changes to existing board mobile layout
 
-### Navigation behavior on small screens
-- Sidebar becomes a drawer on `<lg` (or at least on `<sm` if repo already uses `md/lg` patterns).
-- Mobile header is visible on small screens and contains:
-  - Hamburger button (opens drawer)
-  - Project name + status (compact)
-  - Activity log button (opens bottom sheet / full-screen overlay)
-- Drawer requirements:
-  - Backdrop shown when open; tapping backdrop closes
-  - Close button inside drawer closes
-  - ESC closes (keyboard)
-  - Body scroll locked while drawer is open
+## UI / UX Quality Bar
+- Login/register forms follow existing dark theme styling
+- Error messages inline below fields
+- Loading states on auth actions
+- Toast/notification on success (change password, invite created)
+- Admin pages accessible only to admin role (hidden from members)
+- All interactive elements ≥ 44px touch targets on mobile
 
-### Layout rules to avoid overlap/clipping
-- Never render sidebar inline next to board on mobile; drawer must be `position: fixed` and layered above content.
-- Content region must be `min-w-0` to allow flex children to shrink without overflow.
-- Board container on mobile must handle horizontal navigation without clipping:
-  - Use `overflow-x-auto` with scroll snapping OR tabs (this plan uses scroll snapping).
-- Cards must enforce safe wrapping:
-  - No uncontrolled overflow; long text uses wrap/ellipsis rules.
-  - Badges/pills wrap within card width (or truncate with max-width) without pushing layout wider.
+## Data Model
+
+### New Tables
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('admin','member')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','invited','disabled')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE invites (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  token TEXT UNIQUE NOT NULL,
+  invited_by INTEGER REFERENCES users(id),
+  role TEXT NOT NULL DEFAULT 'member',
+  expires_at DATETIME NOT NULL,
+  accepted_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sessions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES users(id) NOT NULL,
+  token TEXT UNIQUE NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## API Surface
+
+### New Endpoints
+- `POST /api/auth/login` — email+password → JWT token
+- `POST /api/auth/register` — accept invite token + set password
+- `POST /api/auth/change-password` — authenticated, old+new password
+- `GET /api/users` — admin only, list users
+- `PATCH /api/users/:id` — admin only, update role/status
+- `DELETE /api/users/:id` — admin only, disable user
+- `POST /api/invites` — admin only, create invite
+- `GET /api/invites` — admin only, list pending invites
+- `DELETE /api/invites/:id` — admin only, revoke invite
+- `GET /api/auth/me` — get current user profile
+
+### Modified Endpoints
+All existing `/api/*` endpoints get auth middleware (JWT in Authorization header). Returns 401 if missing/invalid.
+
+## Roles
+- **admin**: full access + user management + invites
+- **member**: CRUD on boards/cards/projects, no user management
 
 ## Step Plan
-### Step 1: Repo discovery + baseline snapshots
-Deliverables
-- Document actual frontend/backend entrypoints, routing, and existing layout component(s).
-- Identify current breakpoints and the components responsible for sidebar, board, and activity log.
-- Capture baseline screenshots (desktop + mobile viewport) for comparison.
 
-Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+### Step 1: Database Schema & Auth Utilities
+Deliverables:
+- Add users, invites, sessions tables to db.js migration
+- Add bcrypt password hashing utility
+- Add JWT sign/verify utility
+- Seed a default admin user (admin@qanat.local / changeme)
 
-### Step 2: Introduce an AppShell layout contract
-Deliverables
-- A single “shell” component that owns responsive orchestration: header, sidebar/drawer, main content.
-- Ensure main content region has `min-w-0` and safe overflow defaults.
+Acceptance criteria:
+- Tables created on app start
+- `npm run build` passes
+- Default admin seeded when DB is fresh
 
-Acceptance criteria
-- Desktop layout remains unchanged.
-- Mobile does not render sidebar inline beside the board (no overlap by structure, not just z-index hacks).
+### Step 2: Auth Middleware & Login API
+Deliverables:
+- JWT auth middleware that extracts user from Authorization header
+- Role-check middleware (requireRole('admin'))
+- POST /api/auth/login endpoint
+- GET /api/auth/me endpoint
+- Apply auth middleware to all existing routes
 
-### Step 3: Implement mobile header (P1)
-Deliverables
-- Mobile header shown on mobile breakpoints containing:
-  - Hamburger (≥ 44px touch target)
-  - Project name + status (compact, readable)
-  - Activity log button (≥ 44px)
+Acceptance criteria:
+- Unauthenticated requests to /api/boards return 401
+- Login with admin@qanat.local returns valid JWT
+- /api/auth/me returns user profile
+- /api/health remains public (no auth required)
 
-Acceptance criteria
-- On 390×844, header fits without clipping; buttons are comfortably tappable.
-- Desktop header/layout remains unchanged (or header is hidden on desktop if not needed).
+### Step 3: Invite System API
+Deliverables:
+- POST /api/invites — admin creates invite (generates token, stores in DB)
+- GET /api/invites — admin lists pending invites
+- DELETE /api/invites/:id — admin revokes invite
+- POST /api/auth/register — accept invite token + set email/password/name
 
-### Step 4: Sidebar → Drawer with backdrop + dismiss (P0)
-Deliverables
-- Drawer component behavior:
-  - Open/close state (hamburger toggles)
-  - Backdrop click closes
-  - Close button closes
-  - ESC closes
-  - Body scroll lock while open
-- Drawer uses fixed positioning and transform transitions (dark theme consistent).
+Acceptance criteria:
+- Admin can create invite, gets back token/link
+- Non-admin gets 403 on invite endpoints
+- Register with valid token creates user, marks invite accepted
+- Register with expired/used token returns 400
 
-Acceptance criteria
-- On 390×844, drawer never overlaps content in a way that blocks closing; backdrop always clickable.
-- No content behind the drawer scrolls while open.
-- Desktop sidebar remains in its current position and styling.
+### Step 4: Change Password Flow
+Deliverables:
+- POST /api/auth/change-password (requires old password + new password)
+- ChangePasswordModal.tsx component
+- Wire into user menu/settings area
 
-### Step 5: Mobile board layout with horizontal scroll + snap (P0)
-Deliverables
-- Board columns on mobile become horizontally scrollable with snap:
-  - One column per “page” (column width ≈ viewport width minus padding)
-  - Snap points aligned to each column
-- Add a compact column switcher affordance on mobile:
-  - Either a tab strip that scrolls to the column, or visible column headers that indicate position.
+Acceptance criteria:
+- Authenticated user can change password
+- Wrong old password returns 400
+- After change, old JWT still works (session not invalidated)
+- UI shows success/error feedback
 
-Acceptance criteria
-- On 390×844, each column is readable without zooming; user can switch columns reliably.
-- No horizontal overflow caused by cards/badges; the scroll area is intentional and smooth.
-- Desktop continues showing multiple columns as in v3.
+### Step 5: Login UI & Auth Context
+Deliverables:
+- AuthContext.tsx — stores JWT, user info, login/logout functions
+- LoginPage.tsx — email + password form, error handling
+- RegisterPage.tsx — invite acceptance form
+- ProtectedRoute.tsx — redirects to login if not authenticated
+- Wrap existing app routes in ProtectedRoute
+- Add logout button to sidebar/header
 
-### Step 6: Card overflow and badge wrapping rules (P0)
-Deliverables
-- Update card layout to prevent overflow:
-  - Long titles/descriptions wrap or truncate predictably.
-  - Pills/badges wrap to new lines or truncate with max width.
-  - Ensure internal flex rows use `min-w-0` where necessary.
+Acceptance criteria:
+- Unauthenticated users see login page
+- After login, redirected to board
+- After logout, redirected to login
+- Register page accessible via invite link
+- Mobile layout still works correctly
 
-Acceptance criteria
-- On 390×844, no text overlaps other UI; no card content renders outside card boundaries.
-- Touch targets inside cards remain ≥ 44px where interactive.
+### Step 6: Admin User Management UI
+Deliverables:
+- AdminUsersPage.tsx — table of users with role/status
+- Ability to change user role (admin/member)
+- Ability to disable/enable users
+- Invite creation form (email + role)
+- Link to admin page in sidebar (admin only)
+- Seed script updates: ensure admin user exists on fresh DB
 
-### Step 7: Activity log mobile experience (P0)
-Deliverables
-- Activity log becomes:
-  - Bottom sheet on mobile (preferred), or full-screen overlay if simpler with existing layout
-- Includes backdrop + dismiss behaviors consistent with drawer.
-- Preserves desktop activity log behavior.
-
-Acceptance criteria
-- On 390×844, activity log is readable and scrollable without overlapping critical navigation.
-- Can be opened from mobile header and dismissed via backdrop/close/ESC.
-
-### Step 8: Tests, QA hooks, and regression safeguards
-Deliverables
-- Update/extend Vitest tests for:
-  - Drawer open/close behavior (state + dismiss paths)
-  - Mobile board layout mode selection logic (if conditional)
-- Add `/api/health` endpoint for deterministic smoke testing (optional but recommended).
-- Add a minimal mobile screenshot smoke (manual steps required; Playwright optional).
-
-Acceptance criteria
-- All existing tests pass.
-- New tests pass and cover critical mobile behaviors.
-- Desktop layout regressions are not introduced (validated via targeted snapshot/DOM tests and manual checks).
+Acceptance criteria:
+- Admin sees user management in sidebar
+- Members don't see admin link
+- Admin can invite, change roles, disable users
+- All actions reflected immediately in UI
+- Existing board/card/project functionality unbroken
 
 ## Smoke Test
+
 ### Build + unit tests
-- Install deps: `pnpm install` (or `npm install` / `yarn` depending on repo)
-- Run tests: `pnpm test`
-- Build frontend: `pnpm build`
+- `npm install`
+- `npm run build`
+- `npx vitest run`
 
-### API smoke (recommended with additive health endpoint)
-- Start backend (CI/local): `pnpm --filter server start` (or repo-specific start command)
-- Verify health: `curl -sS http://localhost:3000/api/health`
-
-### UI smoke (non-interactive where possible)
-- Serve built frontend in preview mode: `pnpm preview --host 127.0.0.1 --port 4173`
-- Verify page loads: `curl -I http://127.0.0.1:4173`
-
-### Mobile Smoke Test (manual)
-On a 390×844 viewport (Chrome DevTools device emulation is acceptable):
-- Verify hamburger opens drawer; backdrop tap closes; close button closes; ESC closes.
-- Verify sidebar is not inline next to board (no overlap/clipping).
-- Verify board columns are readable; swipe/scroll switches columns; snap feels correct.
-- Verify cards: long text does not overflow; badges/pills wrap or truncate cleanly.
-- Verify activity log opens as bottom sheet/full-screen overlay; is scrollable; dismiss works.
-
-### Mobile Smoke Test (Playwright, optional)
-- Run: `pnpm playwright test --project=chromium`
-- Validate: one test captures a 390×844 screenshot with drawer open and one with activity log open (artifact comparison in CI).
+### API smoke
+- Start: `node src/server/index.js`
+- Health (public): `curl -s http://localhost:3000/api/health`
+- Login: `curl -s -X POST http://localhost:3000/api/auth/login -H 'Content-Type: application/json' -d '{"email":"admin@qanat.local","password":"changeme"}'`
+- Authenticated: `curl -s http://localhost:3000/api/boards -H 'Authorization: Bearer <token>'`
+- Unauthenticated: `curl -s http://localhost:3000/api/boards` → 401
 
 ## Environment Variables (.env.local.example)
-Frontend (if applicable):
-- `VITE_API_BASE_URL` (e.g., `http://localhost:3000`)
-
-Backend:
-- `PORT` (e.g., `3000`)
-- `SQLITE_DB_PATH` (path to existing SQLite file; must match current repo expectations)
-- `NODE_ENV` (`development` | `test` | `production`)
-
-Optional (only if already present in repo):
-- `LOG_LEVEL`
-- `CORS_ORIGIN`
-
----
+- `PORT=3000`
+- `JWT_SECRET=<random-secret>`
+- `ADMIN_EMAIL=admin@qanat.local`
+- `ADMIN_PASSWORD=changeme`

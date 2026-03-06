@@ -1,24 +1,21 @@
-PIPELINE_STEP_KIND: discovery
-You are building Step 1 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 1 of 6 for Qanat: Kanban Board Auth & Multi-Tenancy.
 Read DESIGN.md for the full architecture.
 
 This is the first step. Start by setting up the project foundation.
 First, verify .gitignore exists with appropriate entries. Create it if missing.
 
-## Your task: Repo discovery + baseline snapshots
+## Your task: Database Schema & Auth Utilities
 
-Deliverables
-- Create `docs/mobile-baseline.md` containing:
-  - Actual frontend/backend entrypoints
-  - Which components own layout (sidebar/board/activity/logs/docs)
-  - Current breakpoint behavior + what breaks on 390px (with evidence)
-  - Exact commands to run tests/build and start production server
-- (Optional but preferred) Save baseline screenshots to `qa/screenshots/desktop.png` and `qa/screenshots/mobile-390x844.png`.
-  If you do this, ensure any servers you start are stopped before finishing the step.
+Deliverables:
+- Add users, invites, sessions tables to db.js migration
+- Add bcrypt password hashing utility
+- Add JWT sign/verify utility
+- Seed a default admin user (admin@qanat.local / changeme)
 
-Acceptance criteria
-- Clear map of the files to change and how to run tests/build locally in CI-friendly ways.
-- Baseline mobile viewport demonstrates current overlap/clipping issue for verification.
+Acceptance criteria:
+- Tables created on app start
+- `npm run build` passes
+- Default admin seeded when DB is fresh
 
 ## Rules (mandatory)
 
@@ -40,3 +37,17 @@ Responsive requirement:
 - Follow DESIGN.md section: 'Responsive / Mobile Layout'
 - If you touch UI/layout, ensure it remains usable on mobile widths (e.g., 390px). Avoid overlap/clipping.
 - Prefer responsive Tailwind classes (sm/md/lg) over fixed widths.
+
+Feature requirements:
+- Implement ALL items in DESIGN.md 'Feature Checklist' (MUST scope). Do not silently skip features.
+- Do NOT implement SHOULD/LATER scope unless a MUST item depends on it.
+- Follow DESIGN.md 'Assumptions' + 'User Flows' — do not underbuild just because the brief is short.
+
+UI / UX quality bar:
+- Follow DESIGN.md section: 'UI / UX Quality Bar' (or write N/A in design for non-UI projects).
+- Default to a modern component kit (shadcn/ui + lucide-react) unless the design forbids it.
+- Ship professional states: hover/focus/disabled, empty states, loading states, error messaging.
+- Ensure typography + spacing feel deliberate (not raw HTML defaults).
+- Accessibility: labels for inputs, aria-labels for icon-only buttons, visible focus.
+
+If you believe a checklist item is impossible within this step: still implement the best partial, and leave a TODO in code + log it in a test or comment — never silently omit.

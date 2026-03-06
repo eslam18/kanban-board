@@ -1,20 +1,22 @@
-You are building Step 3 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 3 of 6 for Qanat: Kanban Board Auth & Multi-Tenancy.
 Read DESIGN.md for the full architecture.
 
-Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract
+Previous steps completed: Database Schema & Auth Utilities, Auth Middleware & Login API
 Build on the existing code. Do not break what already works.
 
-## Your task: Implement mobile header (P1)
+## Your task: Invite System API
 
-Deliverables
-- Mobile header shown on mobile breakpoints containing:
-  - Hamburger (≥ 44px touch target)
-  - Project name + status (compact, readable)
-  - Activity log button (≥ 44px)
+Deliverables:
+- POST /api/invites — admin creates invite (generates token, stores in DB)
+- GET /api/invites — admin lists pending invites
+- DELETE /api/invites/:id — admin revokes invite
+- POST /api/auth/register — accept invite token + set email/password/name
 
-Acceptance criteria
-- On 390×844, header fits without clipping; buttons are comfortably tappable.
-- Desktop header/layout remains unchanged (or header is hidden on desktop if not needed).
+Acceptance criteria:
+- Admin can create invite, gets back token/link
+- Non-admin gets 403 on invite endpoints
+- Register with valid token creates user, marks invite accepted
+- Register with expired/used token returns 400
 
 ## Rules (mandatory)
 
@@ -36,3 +38,17 @@ Responsive requirement:
 - Follow DESIGN.md section: 'Responsive / Mobile Layout'
 - If you touch UI/layout, ensure it remains usable on mobile widths (e.g., 390px). Avoid overlap/clipping.
 - Prefer responsive Tailwind classes (sm/md/lg) over fixed widths.
+
+Feature requirements:
+- Implement ALL items in DESIGN.md 'Feature Checklist' (MUST scope). Do not silently skip features.
+- Do NOT implement SHOULD/LATER scope unless a MUST item depends on it.
+- Follow DESIGN.md 'Assumptions' + 'User Flows' — do not underbuild just because the brief is short.
+
+UI / UX quality bar:
+- Follow DESIGN.md section: 'UI / UX Quality Bar' (or write N/A in design for non-UI projects).
+- Default to a modern component kit (shadcn/ui + lucide-react) unless the design forbids it.
+- Ship professional states: hover/focus/disabled, empty states, loading states, error messaging.
+- Ensure typography + spacing feel deliberate (not raw HTML defaults).
+- Accessibility: labels for inputs, aria-labels for icon-only buttons, visible focus.
+
+If you believe a checklist item is impossible within this step: still implement the best partial, and leave a TODO in code + log it in a test or comment — never silently omit.

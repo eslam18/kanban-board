@@ -1,24 +1,21 @@
-You are building Step 4 of 8 for Kanban Board Mobile Layout Revamp.
+You are building Step 4 of 6 for Qanat: Kanban Board Auth & Multi-Tenancy.
 Read DESIGN.md for the full architecture.
 
-Previous steps completed: Repo discovery + baseline snapshots, Introduce an AppShell layout contract, Implement mobile header (P1)
+Previous steps completed: Database Schema & Auth Utilities, Auth Middleware & Login API, Invite System API
 Build on the existing code. Do not break what already works.
 
-## Your task: Sidebar → Drawer with backdrop + dismiss (P0)
+## Your task: Change Password Flow
 
-Deliverables
-- Drawer component behavior:
-  - Open/close state (hamburger toggles)
-  - Backdrop click closes
-  - Close button closes
-  - ESC closes
-  - Body scroll lock while open
-- Drawer uses fixed positioning and transform transitions (dark theme consistent).
+Deliverables:
+- POST /api/auth/change-password (requires old password + new password)
+- ChangePasswordModal.tsx component
+- Wire into user menu/settings area
 
-Acceptance criteria
-- On 390×844, drawer never overlaps content in a way that blocks closing; backdrop always clickable.
-- No content behind the drawer scrolls while open.
-- Desktop sidebar remains in its current position and styling.
+Acceptance criteria:
+- Authenticated user can change password
+- Wrong old password returns 400
+- After change, old JWT still works (session not invalidated)
+- UI shows success/error feedback
 
 ## Rules (mandatory)
 
@@ -40,3 +37,17 @@ Responsive requirement:
 - Follow DESIGN.md section: 'Responsive / Mobile Layout'
 - If you touch UI/layout, ensure it remains usable on mobile widths (e.g., 390px). Avoid overlap/clipping.
 - Prefer responsive Tailwind classes (sm/md/lg) over fixed widths.
+
+Feature requirements:
+- Implement ALL items in DESIGN.md 'Feature Checklist' (MUST scope). Do not silently skip features.
+- Do NOT implement SHOULD/LATER scope unless a MUST item depends on it.
+- Follow DESIGN.md 'Assumptions' + 'User Flows' — do not underbuild just because the brief is short.
+
+UI / UX quality bar:
+- Follow DESIGN.md section: 'UI / UX Quality Bar' (or write N/A in design for non-UI projects).
+- Default to a modern component kit (shadcn/ui + lucide-react) unless the design forbids it.
+- Ship professional states: hover/focus/disabled, empty states, loading states, error messaging.
+- Ensure typography + spacing feel deliberate (not raw HTML defaults).
+- Accessibility: labels for inputs, aria-labels for icon-only buttons, visible focus.
+
+If you believe a checklist item is impossible within this step: still implement the best partial, and leave a TODO in code + log it in a test or comment — never silently omit.
