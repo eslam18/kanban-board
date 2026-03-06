@@ -8,6 +8,16 @@ function parsePositiveInt(value) {
   return n;
 }
 
+function statusFromColumn(columnName) {
+  const map = {
+    backlog: 'pending',
+    'in progress': 'in_progress',
+    review: 'review',
+    done: 'done',
+  };
+  return map[(columnName || '').toLowerCase()] || 'pending';
+}
+
 export function createCardsRouter(dbApi) {
   const router = Router();
 
@@ -52,7 +62,7 @@ export function createCardsRouter(dbApi) {
       column_id: parsedColumnId,
       title: title.trim(),
       description: typeof description === 'string' ? description : '',
-      status: 'pending',
+      status: statusFromColumn(column.name),
       position: positionRow.next_position,
       retries: 0,
     });
@@ -125,6 +135,11 @@ export function createCardsRouter(dbApi) {
 
       nextColumnId = destination.id;
       nextColumnName = destination.name;
+
+      // Auto-sync status to match destination column unless explicitly overridden
+      if (updates.status === undefined) {
+        updates.status = statusFromColumn(destination.name);
+      }
     }
 
     const updated = dbApi.updateCard(cardId, updates);
