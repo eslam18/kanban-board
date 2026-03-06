@@ -15,6 +15,7 @@ export default function MobileHeader({
   isActivityOpen,
   onToggleSidebar,
   onToggleActivity,
+  onOpenChangePassword,
 }) {
   const projectName = project?.name || 'No project selected';
   const projectStatus = project?.status || 'archived';
@@ -52,6 +53,17 @@ export default function MobileHeader({
           {projectStatus}
         </span>
       </div>
+
+      {typeof onOpenChangePassword === 'function' ? (
+        <button
+          type="button"
+          aria-label="Open account settings"
+          onClick={onOpenChangePassword}
+          className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg border border-gray-600 px-3 text-xs font-medium text-gray-100 transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
+        >
+          Account
+        </button>
+      ) : null}
 
       <button
         type="button"

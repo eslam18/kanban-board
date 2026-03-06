@@ -7,6 +7,7 @@ import LogsPanel from './components/LogsPanel.jsx';
 import DocsPanel from './components/DocsPanel.jsx';
 import AppShell from './components/AppShell.jsx';
 import MobileHeader from './components/MobileHeader.jsx';
+import ChangePasswordModal from './components/ChangePasswordModal';
 
 export default function App() {
   const [projects, setProjects] = useState([]);
@@ -19,6 +20,7 @@ export default function App() {
   const [isActivityOpen, setIsActivityOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [isDocsOpen, setIsDocsOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [pipelineWarning, setPipelineWarning] = useState(null);
 
@@ -193,12 +195,32 @@ export default function App() {
                   setIsDocsOpen(false);
                   setIsSidebarOpen(false);
                 }}
+                onOpenChangePassword={() => {
+                  setIsChangePasswordOpen(true);
+                  setIsActivityOpen(false);
+                  setIsLogsOpen(false);
+                  setIsDocsOpen(false);
+                  setIsSidebarOpen(false);
+                }}
               />
             </div>
 
             <div className="hidden lg:block px-6 pb-0 pt-6 lg:px-8 lg:pt-8">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsChangePasswordOpen(true);
+                      setIsDocsOpen(false);
+                      setIsLogsOpen(false);
+                      setIsActivityOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800"
+                  >
+                    Account
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -329,6 +351,11 @@ export default function App() {
           onClose={() => setIsLogsOpen(false)}
         />
       )}
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </>
   );
 }

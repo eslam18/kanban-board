@@ -50,6 +50,17 @@ export function createAuthRouter(dbApi) {
     WHERE id = ?
     LIMIT 1
   `);
+  const selectPasswordHashByUserId = dbApi.db.prepare(`
+    SELECT id, password_hash
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+  `);
+  const updatePasswordHashByUserId = dbApi.db.prepare(`
+    UPDATE users
+    SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
   const markInviteAccepted = dbApi.db.prepare(`
     UPDATE invites
     SET accepted_at = CURRENT_TIMESTAMP
@@ -176,6 +187,49 @@ export function createAuthRouter(dbApi) {
 
   router.get('/auth/me', authMiddleware, (req, res) => {
     res.json(toSafeUser(req.user));
+  });
+
+  router.post('/auth/change-password', authMiddleware, async (req, res) => {
+    const { old_password, oldPassword, new_password, newPassword } = req.body ?? {};
+    const normalizedOldPassword =
+      typeof old_password === 'string'
+        ? old_password
+        : typeof oldPassword === 'string'
+          ? oldPassword
+          : '';
+    const normalizedNewPassword =
+      typeof new_password === 'string'
+        ? new_password
+        : typeof newPassword === 'string'
+          ? newPassword
+          : '';
+
+    if (!normalizedOldPassword || normalizedOldPassword.trim() === '') {
+      res.status(400).json({ error: 'old_password is required' });
+      return;
+    }
+
+    if (!normalizedNewPassword || normalizedNewPassword.trim() === '') {
+      res.status(400).json({ error: 'new_password is required' });
+      return;
+    }
+
+    const user = selectPasswordHashByUserId.get(req.user.id);
+    if (!user) {
+      res.status(401).json({ error: 'unauthorized' });
+      return;
+    }
+
+    const passwordMatches = await verifyPassword(normalizedOldPassword, user.password_hash);
+    if (!passwordMatches) {
+      res.status(400).json({ error: 'old password is incorrect' });
+      return;
+    }
+
+    const nextPasswordHash = await hashPassword(normalizedNewPassword);
+    updatePasswordHashByUserId.run(nextPasswordHash, req.user.id);
+
+    res.status(200).json({ ok: true });
   });
 
   return router;
