@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../lib/api.ts';
 
 function TabButton({ active, children, onClick, disabled = false }) {
   return (
@@ -33,7 +34,7 @@ export default function DocsPanel({ projectId, isOpen, onClose }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/projects/${projectId}/docs`);
+      const res = await apiFetch(`/api/projects/${projectId}/docs`);
       if (!res.ok) throw new Error(`Failed to load docs (${res.status})`);
       const data = await res.json();
       setDocInfo(data);
@@ -47,7 +48,7 @@ export default function DocsPanel({ projectId, isOpen, onClose }) {
   async function loadDoc(name) {
     setError('');
     try {
-      const res = await fetch(`/api/projects/${projectId}/docs/${encodeURIComponent(name)}`);
+      const res = await apiFetch(`/api/projects/${projectId}/docs/${encodeURIComponent(name)}`);
       if (res.status === 404) {
         setContent('');
         return;
@@ -74,7 +75,7 @@ export default function DocsPanel({ projectId, isOpen, onClose }) {
     setSaving(true);
     setError('');
     try {
-      const res = await fetch(`/api/projects/${projectId}/docs/${encodeURIComponent(activeDoc)}`,
+      const res = await apiFetch(`/api/projects/${projectId}/docs/${encodeURIComponent(activeDoc)}`,
         {
           method: 'PUT',
           headers: { 'content-type': 'application/json' },
@@ -94,7 +95,7 @@ export default function DocsPanel({ projectId, isOpen, onClose }) {
     setSaving(true);
     setError('');
     try {
-      const res = await fetch(`/api/projects/${projectId}/docs/approve`, { method: 'POST' });
+      const res = await apiFetch(`/api/projects/${projectId}/docs/approve`, { method: 'POST' });
       if (!res.ok) throw new Error(`Approve failed (${res.status})`);
       await loadDocInfo();
       if (activeDoc !== 'DESIGN.md') setActiveDoc('DESIGN.md');

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { apiFetch } from '../lib/api.ts';
 
 const typeClasses = {
   info: {
@@ -47,7 +48,7 @@ export default function ActivityLog({ boardId, isOpen, onClose }) {
         setLoading(true);
         setError('');
 
-        const response = await fetch(`/api/boards/${boardId}/log`, {
+        const response = await apiFetch(`/api/boards/${boardId}/log`, {
           signal: controller.signal,
         });
 

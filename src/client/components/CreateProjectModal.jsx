@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from '../lib/api.ts';
 
 export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
   const [name, setName] = useState('');
@@ -28,7 +29,7 @@ export default function CreateProjectModal({ isOpen, onClose, onCreated }) {
       setSubmitting(true);
       setError('');
 
-      const response = await fetch('/api/projects', {
+      const response = await apiFetch('/api/projects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

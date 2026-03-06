@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import CreateProjectModal from './CreateProjectModal.jsx';
+import { useAuth } from '../auth/AuthContext.tsx';
+import { apiFetch } from '../lib/api.ts';
 
 const statusClasses = {
   active: {
@@ -21,6 +23,7 @@ function getStatusClasses(status) {
 }
 
 export default function Sidebar({ projects, selectedProjectId, onSelectProject, onProjectsChange }) {
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -31,7 +34,7 @@ export default function Sidebar({ projects, selectedProjectId, onSelectProject, 
         setLoading(true);
         setError('');
 
-        const response = await fetch('/api/projects');
+        const response = await apiFetch('/api/projects');
         if (!response.ok) {
           throw new Error(`Failed to load projects (${response.status})`);
         }
@@ -98,14 +101,28 @@ export default function Sidebar({ projects, selectedProjectId, onSelectProject, 
         })}
       </div>
 
-      <div className="border-t border-gray-800 p-3">
+      <div className="space-y-3 border-t border-gray-800 p-3">
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="w-full rounded-lg border border-gray-700/90 bg-transparent px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-gray-600 hover:bg-gray-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
+          className="h-11 w-full rounded-lg border border-gray-700/90 bg-transparent px-3 text-sm font-medium text-gray-200 transition hover:border-gray-600 hover:bg-gray-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
         >
           New Project
         </button>
+
+        <section className="rounded-xl border border-gray-800 bg-gray-900/70 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gray-400">Account</p>
+          <p className="mt-2 truncate text-sm font-medium text-gray-100">{user?.display_name || 'Unknown user'}</p>
+          <p className="truncate text-xs text-gray-400">{user?.email || ''}</p>
+          <button
+            type="button"
+            aria-label="Logout"
+            onClick={() => logout()}
+            className="mt-3 h-11 w-full rounded-lg border border-gray-700 px-3 text-sm font-medium text-gray-200 transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
+          >
+            Logout
+          </button>
+        </section>
       </div>
 
       <CreateProjectModal

@@ -8,8 +8,11 @@ import DocsPanel from './components/DocsPanel.jsx';
 import AppShell from './components/AppShell.jsx';
 import MobileHeader from './components/MobileHeader.jsx';
 import ChangePasswordModal from './components/ChangePasswordModal';
+import { useAuth } from './auth/AuthContext.tsx';
+import { apiFetch } from './lib/api.ts';
 
 export default function App() {
+  const { logout } = useAuth();
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -80,7 +83,7 @@ export default function App() {
         setProjectsLoading(true);
         setError('');
 
-        const response = await fetch('/api/projects', { signal: controller.signal });
+        const response = await apiFetch('/api/projects', { signal: controller.signal });
         if (!response.ok) {
           throw new Error(`Failed to load projects (${response.status})`);
         }
@@ -119,7 +122,7 @@ export default function App() {
         if (showSpinner) setProjectLoading(true);
         setError('');
 
-        const response = await fetch(`/api/projects/${selectedProjectId}`, {
+        const response = await apiFetch(`/api/projects/${selectedProjectId}`, {
           signal: controller.signal,
         });
 
@@ -202,6 +205,7 @@ export default function App() {
                   setIsDocsOpen(false);
                   setIsSidebarOpen(false);
                 }}
+                onLogout={() => logout()}
               />
             </div>
 
@@ -220,6 +224,13 @@ export default function App() {
                     className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800"
                   >
                     Account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => logout()}
+                    className="rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-100 transition hover:bg-gray-800"
+                  >
+                    Logout
                   </button>
                   <button
                     type="button"

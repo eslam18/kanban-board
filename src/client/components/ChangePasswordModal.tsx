@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getStoredAuthToken } from '../auth/authStorage.ts';
 
 type ChangePasswordModalProps = {
   isOpen: boolean;
@@ -65,7 +66,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
       return;
     }
 
-    const token = localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+    const token = getStoredAuthToken() || '';
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };

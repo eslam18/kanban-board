@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { apiFetch } from '../lib/api.ts';
 
 const statusClasses = {
   active: 'border-emerald-400/40 bg-emerald-500/20 text-emerald-200',
@@ -30,7 +31,7 @@ export default function ProjectHeader({ project, onProjectUpdated }) {
       setIsSaving(true);
       setError('');
 
-      const response = await fetch(`/api/projects/${project.id}`, {
+      const response = await apiFetch(`/api/projects/${project.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

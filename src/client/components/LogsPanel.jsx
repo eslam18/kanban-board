@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { apiFetch } from '../lib/api.ts';
 
 export default function LogsPanel({ projectId, isOpen, onClose }) {
   const [logs, setLogs] = useState([]);
@@ -13,7 +14,7 @@ export default function LogsPanel({ projectId, isOpen, onClose }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/projects/${projectId}/logs`);
+      const res = await apiFetch(`/api/projects/${projectId}/logs`);
       if (!res.ok) throw new Error(`Failed to load logs (${res.status})`);
       const data = await res.json();
       setLogs(data.logs || []);
@@ -30,7 +31,7 @@ export default function LogsPanel({ projectId, isOpen, onClose }) {
     setSelectedLog(filename);
     setLogContent(null);
     try {
-      const res = await fetch(`/api/projects/${projectId}/logs/${encodeURIComponent(filename)}`);
+      const res = await apiFetch(`/api/projects/${projectId}/logs/${encodeURIComponent(filename)}`);
       if (!res.ok) throw new Error(`Failed to load ${filename}`);
       const data = await res.json();
       setLogContent(data);
